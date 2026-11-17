@@ -8,7 +8,7 @@ AMBOT was an OOP2 group project: a Java Swing 2D side-scrolling platformer built
 
 The goal is to **rebuild the game the team intended, and finish it this time**. Option B was chosen: **build one world at a time**. The engine, the menu and World 1 with its boss come first and are finished to release quality. At that point AMBOT is already a complete short game. Worlds 2 and 3 are then added as content on the same engine.
 
-**Identity twist (proposed by Claude, accepted with route B):** each world is built around moves that already exist in the team's reworked character sheet, and each world's boss tests those moves.
+**Identity twist (proposed during planning, accepted with route B):** each world is built around moves that already exist in the team's reworked character sheet, and each world's boss tests those moves.
 
 | World | Moves it introduces | Boss tests |
 |---|---|---|
@@ -44,7 +44,7 @@ The goal is to **rebuild the game the team intended, and finish it this time**. 
 - **Build:** no build tool (user decision). The original Eclipse project layout stays (`src/`, `resources/`, plus a new `test/` folder) and still opens and runs in Eclipse. A PowerShell script, `build.ps1`, does the command-line work with plain JDK tools: compile (`javac`), run tests, run the game and, from M4, make the jar and package it (`jar`, `jpackage`). The JUnit console jar lives in `lib/` and is used for tests only. It never ships with the game.
 - **Repository:** the project gets its own git repo inside `AMBOT (OOP2)`. The first commit is the untouched original prototype, so the starting point is preserved. Commit as `Pb2kick` only. Whether to add a GitHub remote is the user's call when M0 starts (FitCampus uses a private one).
 - **Assets:** sourced from itch.io (or drawn by the user), and only packs whose license allows use in a freely distributed game. Every asset is recorded in `docs/ASSETS.md` with file, pack, author, URL and license, and credited on the in-game Credits screen.
-- **Platform:** Windows is the primary target. Releases are a **portable zip** made with `jpackage --type app-image`: a folder with `AMBOT.exe` and a bundled runtime, so there's no installer and no WiX Toolset needed. _(Claude's call.)_ Since it's plain Java, it should also run on macOS and Linux, but those aren't tested targets.
+- **Platform:** Windows is the primary target. Releases are a **portable zip** made with `jpackage --type app-image`: a folder with `AMBOT.exe` and a bundled runtime, so there's no installer and no WiX Toolset needed. _(developer's call.)_ Since it's plain Java, it should also run on macOS and Linux, but those aren't tested targets.
 
 ## 4. Approaches considered
 
@@ -59,7 +59,7 @@ Also rejected: porting to libGDX, which would mean a full rewrite and lose the O
 ## 5. Design
 
 ### 5.1 Screen and rendering
-- **Logical canvas 640×360** (16:9), rendered to an off-screen image and scaled up by a whole number: 2× = 1280×720 windowed by default, 3× = 1920×1080 in fullscreen. This keeps pixel art crisp and fixes the current stretched-sprite bug. _(Claude's call.)_
+- **Logical canvas 640×360** (16:9), rendered to an off-screen image and scaled up by a whole number: 2× = 1280×720 windowed by default, 3× = 1920×1080 in fullscreen. This keeps pixel art crisp and fixes the current stretched-sprite bug. _(developer's call.)_
 - The player's 50×37 frames are drawn at 1:1 on the canvas, so they appear 100×74 at 2×.
 - **Tiles are 16×16** on the canvas, the most common size for itch.io tilesets. One screen is 40 × 22.5 tiles.
 - The window is centred and titled "AMBOT". It can be resized by snapping to whole-number scales, or toggled to fullscreen (F11).
@@ -67,7 +67,7 @@ Also rejected: porting to libGDX, which would mean a full rewrite and lose the O
 
 ### 5.2 Game loop
 - The fixed-timestep loop is kept (updates at a fixed rate, rendering capped). It **sleeps between ticks** instead of spinning, to fix the CPU bug.
-- Target: 60 updates per second, with physics constants tuned to that rate, and rendering at 60 FPS or the display rate. _(Claude's call. The original 200 UPS is unnecessary.)_
+- Target: 60 updates per second, with physics constants tuned to that rate, and rendering at 60 FPS or the display rate. _(developer's call. The original 200 UPS is unnecessary.)_
 - If the window loses focus, the game pauses (open the pause menu, reset inputs).
 
 ### 5.3 Game states
@@ -91,7 +91,7 @@ Title ─► MainMenu ─┬─► WorldSelect ─► Playing ⇄ Paused
 - **Hitbox separate from sprite:** collision uses a small box around the body, not the 50×37 frame.
 - **Physics:** gravity, variable jump height (releasing jump early cuts it short), coyote time and jump buffering (small grace windows so jumps feel fair). Exact numbers are the builder's to tune.
 - **Abilities unlock per world:** slide and ledge-grab from World 2 on, attack combos from World 3 on. Once unlocked, they stay available everywhere, including when replaying earlier levels.
-- **Health:** hearts, starting at 3 _(Claude's call, see open questions)_. Touching an enemy or hazard costs 1 heart, knocks the player back and gives about 1 second of invincibility with blinking. Pits are instant death. At 0 hearts → GameOver → retry from the last checkpoint with full hearts.
+- **Health:** hearts, starting at 3 _(developer's call, see open questions)_. Touching an enemy or hazard costs 1 heart, knocks the player back and gives about 1 second of invincibility with blinking. Pits are instant death. At 0 hearts → GameOver → retry from the last checkpoint with full hearts.
 
 ### 5.5 Controls (default)
 | Action | Key |
@@ -104,7 +104,7 @@ Title ─► MainMenu ─┬─► WorldSelect ─► Playing ⇄ Paused
 | Pause | Esc |
 | Fullscreen | F11 |
 
-The original used W to float upward and Ctrl to crouch; both change to the scheme above. Rebinding keys is not planned. _(Claude's call.)_
+The original used W to float upward and Ctrl to crouch; both change to the scheme above. Rebinding keys is not planned. _(developer's call.)_
 
 ### 5.6 Levels
 - Designed in **Tiled** and saved as `.tmx` with CSV-encoded layers, which the game parses with `javax.xml`. No library needed.
@@ -118,9 +118,9 @@ The original used W to float upward and Ctrl to crouch; both change to the schem
 - **Camera:** follows the player with a small dead zone, clamped to level bounds. It locks to the arena during a boss fight.
 - **Parallax background:** 2–3 layers per world, from the world's asset pack.
 - **Collision:** box-against-tile-grid, with one-way platforms and hazard tiles.
-- **Structure per world:** 3 regular levels, then a boss level. The boss level is a short approach and then an arena. That's 12 levels in total. _(Claude's call.)_
+- **Structure per world:** 3 regular levels, then a boss level. The boss level is a short approach and then an arena. That's 12 levels in total. _(developer's call.)_
 - **Pickups:** a heart refill. Collectibles such as coins or gems aren't planned.
-- **Who designs levels:** Claude designs all 12 (user decision). The user doesn't need to use Tiled. The workflow:
+- **Who designs levels:** the developer designs all 12 (user decision). The user doesn't need to use Tiled. The workflow:
   - Levels are written as Tiled-compatible `.tmx` files, by hand or with small generator scripts, so the user can still open them in Tiled later if they ever want to.
   - A `LevelValidator` (run as a JUnit test over every level file) checks each level for:
     - exactly one spawn and one exit
@@ -144,7 +144,7 @@ Entity (abstract: position, hitbox, update/render)
 
 - Interfaces: `Damageable`, `Collidable`, `GameState`, and others where they make the code clearer. They show inheritance, abstraction and polymorphism without forcing it.
 - **2–3 enemy types per world.** World 2 and 3 enemies are placed so that the new moves matter, for example low projectiles you slide under or enemies on ledges.
-- **Each boss** has a health bar, 2–3 phases with readable warning ("tell") animations, and patterns that test its world's moves. The specific pattern designs are left to the builder within that outline. The user sees each boss when its world is released and can ask for changes then. There's no approval step before it's built. _(Claude's reading of "you will be doing everything".)_
+- **Each boss** has a health bar, 2–3 phases with readable warning ("tell") animations, and patterns that test its world's moves. The specific pattern designs are left to the builder within that outline. The user sees each boss when its world is released and can ask for changes then. There's no approval step before it's built. _(developer's reading of "you will be doing everything".)_
 - Enemy and boss art comes from itch.io packs, chosen to fit the player's small pixel-art scale.
 
 ### 5.8 Audio
@@ -159,10 +159,10 @@ Entity (abstract: position, hitbox, update/render)
 
 ### 5.10 Assets workflow
 - Until real art is chosen, placeholders (flat coloured tiles and boxes) let the engine and levels be built without waiting on art.
-- At the start of each world's content milestone, Claude picks the itch.io packs (tileset, background, enemies, boss, music). It favours packs whose pixel scale matches the 50×37 player, and only uses licenses that allow free redistribution. The picks are shown with the world's release, and the user can ask for swaps then. _(Claude's reading of "you will be doing everything".)_
-- **Downloading:** pack downloads go through the user's browser or with the user's go-ahead, since itch.io pages sometimes need a click-through or a name-your-price step. Claude never pays for or buys a pack. If the best fit is a paid pack, it's flagged and the user decides.
+- At the start of each world's content milestone, the developer picks the itch.io packs (tileset, background, enemies, boss, music). It favours packs whose pixel scale matches the 50×37 player, and only uses licenses that allow free redistribution. The picks are shown with the world's release, and the user can ask for swaps then. _(developer's reading of "you will be doing everything".)_
+- **Downloading:** pack downloads go through the user's browser or with the user's go-ahead, since itch.io pages sometimes need a click-through or a name-your-price step. The developer never pays for or buys a pack. If the best fit is a paid pack, it's flagged and the user decides.
 - `docs/ASSETS.md` is the single source of truth for credits and licenses. The Credits screen lists the original team, asset creators and the restoration.
-- **Original team names:** deferred by the user. Until they're supplied, the Credits screen shows "Original OOP2 team". Claude asks again before the v0.1 release.
+- **Original team names:** deferred by the user. Until they're supplied, the Credits screen shows "Original OOP2 team". Ask again before the v0.1 release.
 
 ### 5.11 Code organisation
 Lowercase packages under one root, e.g. `ambot.core` (loop, window, canvas), `ambot.states`, `ambot.entities`, `ambot.entities.enemies`, `ambot.entities.bosses`, `ambot.level` (TMX loader, tiles, camera), `ambot.audio`, `ambot.ui`, `ambot.save` and `ambot.util`. The final split is the builder's call. The original classes are refactored into this structure, and git history keeps the originals.
@@ -175,7 +175,7 @@ Lowercase packages under one root, e.g. `ambot.core` (loop, window, canvas), `am
 
 | Milestone | Delivers | Release |
 |---|---|---|
-| M0 | Own git repo with the original snapshot, `build.ps1`, small in-place fixes for analysis bugs 1–6 (crouch row, all 11 columns, aspect ratio, facing flip, sleeping loop, centred window), `docs/ASSETS.md` started. M1 replaces most of this code, but the fixes are about 30 lines and give a working "restored prototype" tag (`v0.0`) before the rebuild. _(Claude's call.)_ | v0.0 |
+| M0 | Own git repo with the original snapshot, `build.ps1`, small in-place fixes for analysis bugs 1–6 (crouch row, all 11 columns, aspect ratio, facing flip, sleeping loop, centred window), `docs/ASSETS.md` started. M1 replaces most of this code, but the fixes are about 30 lines and give a working "restored prototype" tag (`v0.0`) before the rebuild. _(developer's call.)_ | v0.0 |
 | M1 | Engine core: scaled canvas, fixed loop with sleep, game states, menu skeleton, player state machine with gravity, jump, facing and crouch, solid-tile collision in a hard-coded test room | — |
 | M2 | Levels: TMX loader, tiles, collision, one-way platforms, hazards, camera, parallax, checkpoints, exit, placeholder test levels | — |
 | M3 | Combat: hearts, damage, knockback, invincibility, attack hitboxes, World 1 enemies, HUD, GameOver/retry | — |
@@ -187,7 +187,7 @@ Lowercase packages under one root, e.g. `ambot.core` (loop, window, canvas), `am
 - Exact physics and feel constants, hitbox sizes and enemy stats.
 - Enemy AI details and boss pattern specifics, within §5.7. Boss concepts still go to the user for approval.
 - Internal package and class split beyond §5.11, and the exact UI layout of menus.
-- Level layouts, within the per-world move themes (Claude designs all levels, per §5.6).
+- Level layouts, within the per-world move themes (the developer designs all levels, per §5.6).
 - Exact frame split of sheet row 8 (sword stance / hurt / death), verified against the original sheet.
 - How one-way platform drop-through (S/↓) and crouch/slide share a key: drop wins when standing on a one-way platform.
 
@@ -196,16 +196,16 @@ Lowercase packages under one root, e.g. `ambot.core` (loop, window, canvas), `am
 | Question | Answer | By |
 |---|---|---|
 | Route | B: one world at a time | user |
-| Who designs the levels | Claude designs all 12 | user |
+| Who designs the levels | the developer designs all 12 | user |
 | Original team credits | Deferred. Placeholder until supplied, asked again before v0.1 | user |
-| Asset packs and boss concepts | Claude picks; reviewed at each world release | Claude (reading of "doing everything") |
+| Asset packs and boss concepts | the developer picks; reviewed at each world release | developer (reading of "doing everything") |
 | Build tooling | No Maven. Keep the Eclipse layout, add `build.ps1` and a JUnit jar in `lib/` | user |
-| Release format | Portable zip (app-image), no installer | Claude |
-| Old bugs in M0 | Fixed in place (~30 lines), tagged `v0.0` | Claude |
-| Canvas and tiles | 640×360 canvas, whole-number scaling, 16×16 tiles | Claude |
-| Update rate | 60 UPS with a sleeping loop | Claude |
-| Health model | 3 hearts, checkpoints, no lives | Claude |
-| Level count | 3 levels and a boss level per world (12) | Claude |
-| Controls | A/D move, Space jump, S crouch/slide, J or click attack, Esc pause | Claude |
-| Collectibles | None, heart refills only | Claude |
+| Release format | Portable zip (app-image), no installer | developer |
+| Old bugs in M0 | Fixed in place (~30 lines), tagged `v0.0` | developer |
+| Canvas and tiles | 640×360 canvas, whole-number scaling, 16×16 tiles | developer |
+| Update rate | 60 UPS with a sleeping loop | developer |
+| Health model | 3 hearts, checkpoints, no lives | developer |
+| Level count | 3 levels and a boss level per world (12) | developer |
+| Controls | A/D move, Space jump, S crouch/slide, J or click attack, Esc pause | developer |
+| Collectibles | None, heart refills only | developer |
 | GitHub remote | Asked at M0 | open |
