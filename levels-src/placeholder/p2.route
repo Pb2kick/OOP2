@@ -1,0 +1,40 @@
+# Up and Through. Climb 16 one-way platforms straight up, hop onto the summit, drop through to the exit.
+5 -
+20 JUMP
+10 -
+20 JUMP
+10 -
+20 JUMP
+10 -
+20 JUMP
+10 -
+20 JUMP
+10 -
+20 JUMP
+10 -
+20 JUMP
+10 -
+20 JUMP
+10 -
+20 JUMP
+10 -
+20 JUMP
+10 -
+20 JUMP
+10 -
+20 JUMP
+10 -
+20 JUMP
+10 -
+20 JUMP
+10 -
+20 JUMP
+10 -
+20 JUMP            # 16th platform (row 10)
+10 -
+20 RIGHT
+20 RIGHT+JUMP      # up 2 onto the summit at column 15
+140 RIGHT          # past the checkpoint, onto the one-way floor
+1 DOWN             # drop through
+30 -
+200 RIGHT          # along the ledge to the exit

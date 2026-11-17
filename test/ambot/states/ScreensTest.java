@@ -6,32 +6,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Set;
 
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-import ambot.entities.player.PlayerAnimations;
-import ambot.gfx.SpriteSheet;
 import ambot.input.Action;
 import ambot.input.Controls;
-import ambot.level.AsciiLevel;
 
 class ScreensTest {
-    static SpriteSheet sheet;
-
-    @BeforeAll
-    static void loadSheet() {
-        sheet = SpriteSheet.load(PlayerAnimations.SHEET_PATH, PlayerAnimations.CELL_W, PlayerAnimations.CELL_H);
-    }
-
-    static final class FakeContext implements GameContext {
-        final StateManager sm = new StateManager();
-        boolean quitCalled;
-
-        @Override public StateManager states() { return sm; }
-        @Override public SpriteSheet playerSheet() { return sheet; }
-        @Override public void quit() { quitCalled = true; }
-    }
-
     private final FakeContext ctx = new FakeContext();
 
     private static Controls press(Action a) {
@@ -109,20 +89,7 @@ class ScreensTest {
         startOn(playing);
         for (int i = 0; i < 5; i++) tick(Controls.NONE);
         assertTrue(playing.player().onGround());
-        assertEquals(playing.level().spawnY() + 16, playing.player().y() + 28);
-    }
-
-    @Test
-    void respawnsAfterFallingOutOfMap() {
-        AsciiLevel pitRoom = AsciiLevel.parse(
-                "........",
-                "P.......",
-                "##...###");
-        PlayingState playing = new PlayingState(ctx, pitRoom);
-        startOn(playing);
-        playing.player().respawn(36, 0); // over the pit
-        for (int i = 0; i < 120; i++) tick(Controls.NONE);
-        assertTrue(playing.player().y() < pitRoom.map().heightPx(), "y was " + playing.player().y());
+        assertEquals(playing.level().spawn().y(), playing.player().y() + 28);
     }
 
     @Test

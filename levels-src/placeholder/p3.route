@@ -1,0 +1,20 @@
+# Mind the Spikes. Hitbox right edge = 47 + 2*tick while holding RIGHT; full jump = 20 ticks of JUMP.
+80 RIGHT
+20 RIGHT+JUMP      # spike pit at columns 13-15
+36 RIGHT
+20 RIGHT+JUMP      # spike at column 21
+28 RIGHT
+20 RIGHT+JUMP      # void pit at columns 26-28
+100 RIGHT          # checkpoint at column 31
+20 RIGHT+JUMP      # spike pit at columns 41-43
+42 RIGHT
+20 RIGHT+JUMP      # spikes at columns 49-50
+24 RIGHT
+20 RIGHT+JUMP      # step up 2 at column 56
+58 RIGHT
+20 RIGHT+JUMP      # void pit at columns 64-66
+124 RIGHT          # step down, checkpoint at column 78
+20 RIGHT+JUMP      # spike at column 83
+28 RIGHT
+20 RIGHT+JUMP      # spike pit at columns 88-90
+300 RIGHT          # run to the exit at column 104

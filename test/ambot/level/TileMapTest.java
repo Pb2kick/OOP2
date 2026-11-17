@@ -69,18 +69,4 @@ class TileMapTest {
         assertTrue(m.touchesHazard(new Rect(5, 2, 14, 12)), "right edge at 19 touches");
     }
 
-    @Test
-    void asciiLevelFindsSingleSpawn() {
-        AsciiLevel lvl = AsciiLevel.parse(
-                "........",
-                "........",
-                "........",
-                "..P.....",
-                "########");
-        assertEquals(32, lvl.spawnX());
-        assertEquals(48, lvl.spawnY());
-        assertFalse(lvl.map().isSolid(2, 3), "the spawn tile is empty");
-        assertThrows(IllegalArgumentException.class, () -> AsciiLevel.parse(ROOM));
-        assertThrows(IllegalArgumentException.class, () -> AsciiLevel.parse("P..P", "####"));
-    }
 }

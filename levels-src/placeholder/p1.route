@@ -1,0 +1,18 @@
+# First Steps. Hitbox right edge = 47 + 2*tick while holding RIGHT; full jump = 20 ticks of JUMP.
+96 RIGHT
+20 RIGHT+JUMP      # gap at columns 15-16
+46 RIGHT
+20 RIGHT+JUMP      # step up 2 at column 25
+73 RIGHT
+20 RIGHT+JUMP      # gap at columns 35-36
+47 RIGHT
+20 RIGHT+JUMP      # step up 2 at column 45
+58 RIGHT
+20 RIGHT+JUMP      # gap at columns 53-55
+124 RIGHT          # checkpoint, step down at column 63
+20 RIGHT+JUMP      # gap at column 71
+46 RIGHT
+20 RIGHT+JUMP      # step up 2 at column 81
+58 RIGHT
+20 RIGHT+JUMP      # gap at columns 89-91
+300 RIGHT          # step down, run to the exit at column 115

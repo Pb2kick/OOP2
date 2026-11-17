@@ -45,6 +45,16 @@ public final class SmokeRun {
         hold(Action.RIGHT, 1000);
         snap("03-run");
 
+        // keep running right: jump the first gap (level p1, columns 15-16) and the first step up (column 25)
+        game.input().actionPressed(Action.RIGHT);
+        Thread.sleep(520);
+        hold(Action.JUMP, 350);
+        Thread.sleep(800);
+        hold(Action.JUMP, 350);
+        Thread.sleep(600);
+        snap("03b-scrolled");
+        game.input().actionReleased(Action.RIGHT);
+
         game.input().actionPressed(Action.JUMP);
         Thread.sleep(250);
         snap("04-air");
