@@ -3,9 +3,15 @@ package ambot.tools;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+
+import javax.imageio.ImageIO;
 
 import ambot.entities.player.PlayerTuning;
 import ambot.level.Level;
+import ambot.level.LevelCatalog;
+import ambot.level.TmxLoader;
 import ambot.level.LevelObject;
 import ambot.level.LevelRenderer;
 import ambot.level.Rect;
@@ -19,6 +25,18 @@ public final class LevelPreview {
     private static final Color ARENA = new Color(0xFF004D);
 
     private LevelPreview() {
+    }
+
+    /** Writes {@code <name>.png} for every catalog level into the folder {@code args[0]}. */
+    public static void main(String[] args) throws IOException {
+        File out = new File(args.length > 0 ? args[0] : "build/preview");
+        out.mkdirs();
+        for (String path : LevelCatalog.PLACEHOLDER_PATHS) {
+            Level level = TmxLoader.load(path);
+            File png = new File(out, level.name() + ".png");
+            ImageIO.write(render(level), "png", png);
+            System.out.println("wrote " + png + " (" + level.widthTiles() + "x" + level.heightTiles() + " tiles)");
+        }
     }
 
     /** The whole level at 1x: tiles, markers, and outlines for the spawn, enemies, pickups and boss arena. */

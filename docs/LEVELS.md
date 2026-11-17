@@ -61,8 +61,8 @@ These are the rules the loader enforces:
 
 ## Design limits
 
-These come from the player's physics. A full jump rises about 51 px (about 3 tiles) and carries about 68 px (about 4 tiles) on flat ground.
+These come from the player's physics. A full jump rises 48.4 px (just over 3 tiles) and carries about 68 px (about 4 tiles) on flat ground.
 
 - Gaps are at most **3 tiles** wide.
-- Steps up are at most **3 tiles**.
-- One-way platforms are at most **3 tiles** apart vertically.
+- Steps up are at most **2 tiles**. A 3-tile step needs a pixel-perfect jump, so don't use one.
+- One-way platforms are at most **2 tiles** apart vertically, for the same reason.
