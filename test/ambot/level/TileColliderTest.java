@@ -64,6 +64,50 @@ class TileColliderTest {
         assertEquals(64, box.bottom());
     }
 
+    // one-way row at ty=4 (top y=64); tile (0,4) is solid
+    private final TileMap oneWay = TileMap.fromAscii(
+            "........",
+            "........",
+            "........",
+            "........",
+            "#-------",
+            "........",
+            "########");
+
+    @Test
+    void landsOnOneWayAtMaxFall() {
+        assertEquals(new Move(44, true), TileCollider.moveY(new Rect(32, 40, 14, 20), 6, oneWay));
+    }
+
+    @Test
+    void risesThroughOneWay() {
+        assertEquals(new Move(64, false), TileCollider.moveY(new Rect(32, 70, 14, 20), -6, oneWay));
+    }
+
+    @Test
+    void oneWayNeverBlocksSideways() {
+        assertEquals(new Move(36, false), TileCollider.moveX(new Rect(30, 66, 14, 10), 6, oneWay));
+    }
+
+    @Test
+    void ignoreOneWayFallsThrough() {
+        assertEquals(new Move(46, false), TileCollider.moveY(new Rect(32, 40, 14, 20), 6, oneWay, true));
+    }
+
+    @Test
+    void notGroundedInsideOneWay() {
+        assertFalse(TileCollider.onGround(new Rect(32, 46, 14, 20), oneWay), "feet 2px inside the platform");
+        assertTrue(TileCollider.onGround(new Rect(32, 44, 14, 20), oneWay), "feet exactly on top");
+        assertFalse(TileCollider.onGround(new Rect(32, 44, 14, 20), oneWay, true), "dropping ignores one-way");
+    }
+
+    @Test
+    void onOneWayOnlyNeedsNoSolidUnderfoot() {
+        assertTrue(TileCollider.onOneWayOnly(new Rect(32, 44, 14, 20), oneWay));
+        assertFalse(TileCollider.onOneWayOnly(new Rect(10, 44, 14, 20), oneWay), "partly over the solid tile");
+        assertFalse(TileCollider.onOneWayOnly(new Rect(32, 40, 14, 20), oneWay), "in the air");
+    }
+
     @Test
     void fallsOutBottomThroughGap() {
         TileMap gap = TileMap.fromAscii(

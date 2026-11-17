@@ -1,6 +1,7 @@
 package ambot.entities.player;
 
 import static ambot.entities.player.PlayerTuning.COYOTE_TICKS;
+import static ambot.entities.player.PlayerTuning.DROP_THROUGH_TICKS;
 import static ambot.entities.player.PlayerTuning.HITBOX_H;
 import static ambot.entities.player.PlayerTuning.HITBOX_W;
 import static ambot.entities.player.PlayerTuning.JUMP_BUFFER_TICKS;
@@ -19,15 +20,18 @@ import ambot.gfx.AnimationClip;
 import ambot.gfx.SpriteSheet;
 import ambot.input.Action;
 import ambot.input.Controls;
+import ambot.level.TileCollider;
 import ambot.level.TileMap;
 
-/** The adventurer: runs, jumps (with coyote time and jump buffering), crouches and attacks. */
+/** The adventurer: runs, jumps (with coyote time and jump buffering), crouches, drops through one-way platforms and attacks. */
 public class Player extends Creature {
     private final SpriteSheet sheet;
     private PlayerState state = PlayerState.IDLE;
     private int coyote, buffer;
     /** Ticks since take-off, or -1 when not in a jump. */
     private int jumpTicks = -1;
+    /** Ticks left during which one-way platforms are ignored. */
+    private int dropTicks;
 
     public Player(double x, double y, SpriteSheet sheet) {
         super(x, y, HITBOX_W, HITBOX_H);
@@ -36,6 +40,11 @@ public class Player extends Creature {
     }
 
     public void update(Controls c, TileMap map) {
+        // 0. down on a one-way platform drops through it (drop wins over crouch, spec section 7)
+        if (c.wasPressed(Action.DOWN) && onGround && TileCollider.onOneWayOnly(hitbox(), map)) {
+            dropTicks = DROP_THROUGH_TICKS;
+        }
+
         // 1. grace timers
         coyote = onGround ? COYOTE_TICKS : Math.max(0, coyote - 1);
         buffer = c.wasPressed(Action.JUMP) ? JUMP_BUFFER_TICKS : Math.max(0, buffer - 1);
@@ -49,7 +58,7 @@ public class Player extends Creature {
 
         // 3. horizontal movement and facing
         int dir = (c.isHeld(Action.RIGHT) ? 1 : 0) - (c.isHeld(Action.LEFT) ? 1 : 0);
-        boolean crouching = c.isHeld(Action.DOWN) && onGround && !attacking;
+        boolean crouching = c.isHeld(Action.DOWN) && onGround && !attacking && dropTicks == 0;
         vx = (crouching || (attacking && onGround)) ? 0 : dir * RUN_SPEED;
         if (dir != 0 && !attacking) {
             facing = dir > 0 ? Facing.RIGHT : Facing.LEFT;
@@ -71,7 +80,8 @@ public class Player extends Creature {
         if (jumpTicks >= 0) jumpTicks++;
 
         // 6. physics
-        applyGravityAndMove(map);
+        applyGravityAndMove(map, dropTicks > 0);
+        if (dropTicks > 0) dropTicks--;
         if (onGround) jumpTicks = -1;
 
         // 7. state and animation
@@ -99,6 +109,7 @@ public class Player extends Creature {
         coyote = 0;
         buffer = 0;
         jumpTicks = -1;
+        dropTicks = 0;
         onGround = false;
         state = PlayerState.IDLE;
         animator.play(PlayerAnimations.IDLE);

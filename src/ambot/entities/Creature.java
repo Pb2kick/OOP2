@@ -17,17 +17,22 @@ public abstract class Creature extends Entity {
 
     /** Applies gravity, then moves horizontally and vertically against the tile map. */
     protected void applyGravityAndMove(TileMap map) {
+        applyGravityAndMove(map, false);
+    }
+
+    /** As {@link #applyGravityAndMove(TileMap)}; {@code ignoreOneWay} lets the creature drop through one-way platforms. */
+    protected void applyGravityAndMove(TileMap map, boolean ignoreOneWay) {
         vy = Math.min(vy + Physics.GRAVITY, Physics.MAX_FALL);
 
         TileCollider.Move mx = TileCollider.moveX(hitbox(), vx, map);
         x = mx.position();
         if (mx.blocked()) vx = 0;
 
-        TileCollider.Move my = TileCollider.moveY(hitbox(), vy, map);
+        TileCollider.Move my = TileCollider.moveY(hitbox(), vy, map, ignoreOneWay);
         y = my.position();
         if (my.blocked()) vy = 0;
 
-        onGround = TileCollider.onGround(hitbox(), map);
+        onGround = TileCollider.onGround(hitbox(), map, ignoreOneWay);
     }
 
     public double vx() {

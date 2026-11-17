@@ -191,6 +191,69 @@ class PlayerTest {
         assertEquals(32, p.x());
     }
 
+    // one-way ledge on row 8 (top y=128) at columns 3..9; tile (2,8) is solid; floor top at y=176
+    static final TileMap LEDGE_ROOM = TileMap.fromAscii(
+            "....................",
+            "....................",
+            "....................",
+            "....................",
+            "....................",
+            "....................",
+            "....................",
+            "....................",
+            "..#-------..........",
+            "....................",
+            "....................",
+            "####################");
+    static final double ON_LEDGE_Y = 128 - 28;
+
+    static void stepOn(TileMap map, Player p, Controls c, int n) {
+        for (int i = 0; i < n; i++) p.update(c, map);
+    }
+
+    static Player standingOnLedge(double x) {
+        Player p = new Player(x, ON_LEDGE_Y, sheet);
+        stepOn(LEDGE_ROOM, p, Controls.NONE, 3);
+        assertTrue(p.onGround(), "should start standing on the ledge");
+        return p;
+    }
+
+    @Test
+    void downOnOneWayDropsThrough() {
+        Player p = standingOnLedge(80);
+        p.update(press(Action.DOWN), LEDGE_ROOM);
+        stepOn(LEDGE_ROOM, p, held(Action.DOWN), 10);
+        assertTrue(p.y() > ON_LEDGE_Y, "y was " + p.y());
+        assertEquals(PlayerState.FALL, p.state());
+    }
+
+    @Test
+    void noDropWhenPartlyOnSolid() {
+        Player p = standingOnLedge(40); // over the solid tile (2,8) and the one-way tile (3,8)
+        p.update(press(Action.DOWN), LEDGE_ROOM);
+        stepOn(LEDGE_ROOM, p, held(Action.DOWN), 10);
+        assertEquals(PlayerState.CROUCH, p.state());
+        assertEquals(ON_LEDGE_Y, p.y());
+    }
+
+    @Test
+    void crouchOnSolidUnchanged() {
+        Player p = new Player(200, STANDING_Y, sheet);
+        stepOn(LEDGE_ROOM, p, Controls.NONE, 3);
+        p.update(press(Action.DOWN), LEDGE_ROOM);
+        stepOn(LEDGE_ROOM, p, held(Action.DOWN), 10);
+        assertEquals(PlayerState.CROUCH, p.state());
+        assertEquals(STANDING_Y, p.y());
+    }
+
+    @Test
+    void landsOnOneWayFromAbove() {
+        Player p = new Player(80, ON_LEDGE_Y - 48, sheet);
+        stepOn(LEDGE_ROOM, p, Controls.NONE, 60);
+        assertTrue(p.onGround());
+        assertEquals(ON_LEDGE_Y, p.y());
+    }
+
     @Test
     void fallsIntoPitWithoutError() {
         Player p = new Player(176, STANDING_Y, sheet);

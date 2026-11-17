@@ -42,6 +42,34 @@ class TileMapTest {
     }
 
     @Test
+    void asciiReadsOneWayAndHazard() {
+        TileMap m = TileMap.fromAscii("-^#", "...");
+        assertTrue(m.isOneWay(0, 0));
+        assertTrue(m.isHazard(1, 0));
+        assertFalse(m.isSolid(0, 0));
+        assertFalse(m.isSolid(1, 0));
+        assertFalse(m.isOneWay(2, 0));
+        assertFalse(m.isOneWay(-1, 0), "off the map is never one-way");
+        assertFalse(m.isHazard(0, 5), "below the map is never a hazard");
+    }
+
+    @Test
+    void overlapsChecksKind() {
+        TileMap m = TileMap.fromAscii("#-.", "...");
+        Rect box = new Rect(10, 4, 12, 8); // over tiles (0,0) and (1,0)
+        assertTrue(m.overlaps(box, TileMap.SOLID));
+        assertTrue(m.overlaps(box, TileMap.ONEWAY));
+        assertFalse(m.overlaps(box, TileMap.HAZARD));
+    }
+
+    @Test
+    void hazardInsetForgivesGrazing() {
+        TileMap m = TileMap.fromAscii(".^.", "..."); // hazard at x 16..32
+        assertFalse(m.touchesHazard(new Rect(3, 2, 14, 12)), "right edge at 17 only grazes");
+        assertTrue(m.touchesHazard(new Rect(5, 2, 14, 12)), "right edge at 19 touches");
+    }
+
+    @Test
     void asciiLevelFindsSingleSpawn() {
         AsciiLevel lvl = AsciiLevel.parse(
                 "........",

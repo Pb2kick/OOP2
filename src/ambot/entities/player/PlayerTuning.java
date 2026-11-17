@@ -15,6 +15,8 @@ public final class PlayerTuning {
     public static final int COYOTE_TICKS = 6;
     /** Ticks a jump press is remembered before landing. */
     public static final int JUMP_BUFFER_TICKS = 6;
+    /** Ticks during which one-way platforms are ignored after pressing down on one. */
+    public static final int DROP_THROUGH_TICKS = 6;
     public static final int HITBOX_W = 14;
     public static final int HITBOX_H = 28;
     /** The body's centre column inside the 50-px sheet cell. */

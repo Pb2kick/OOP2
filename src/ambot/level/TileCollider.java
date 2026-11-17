@@ -41,6 +41,15 @@ public final class TileCollider {
     }
 
     public static Move moveY(Rect box, double dy, TileMap map) {
+        return moveY(box, dy, map, false);
+    }
+
+    /**
+     * Vertical move. Going down, one-way platforms block like solid tiles unless
+     * {@code ignoreOneWay} (dropping through). Only rows the box's bottom edge newly
+     * enters are checked, so a box already inside a one-way tile falls on through it.
+     */
+    public static Move moveY(Rect box, double dy, TileMap map, boolean ignoreOneWay) {
         checkStep(dy);
         if (dy == 0) return new Move(box.y(), false);
         int tx0 = floor(box.x() / T);
@@ -50,7 +59,9 @@ public final class TileCollider {
             int rowOld = floor((box.bottom() - EPS) / T);
             int rowNew = floor((newY + box.h() - EPS) / T);
             for (int row = rowOld + 1; row <= rowNew; row++) {
-                if (anySolidInRow(map, row, tx0, tx1)) return new Move(row * T - box.h(), true);
+                if (anySolidInRow(map, row, tx0, tx1) || (!ignoreOneWay && anyOneWayInRow(map, row, tx0, tx1))) {
+                    return new Move(row * T - box.h(), true);
+                }
             }
         } else {
             int rowOld = floor(box.y() / T);
@@ -62,10 +73,35 @@ public final class TileCollider {
         return new Move(newY, false);
     }
 
-    /** True if there is a solid tile just below the box. */
+    /** True if there is a solid tile, or a one-way platform top, just below the box. */
     public static boolean onGround(Rect box, TileMap map) {
+        return onGround(box, map, false);
+    }
+
+    /** As {@link #onGround(Rect, TileMap)}; one-way platforms count only with the feet exactly on top. */
+    public static boolean onGround(Rect box, TileMap map, boolean ignoreOneWay) {
         int row = floor((box.bottom() + 0.01) / T);
-        return anySolidInRow(map, row, floor(box.x() / T), floor((box.right() - EPS) / T));
+        int tx0 = floor(box.x() / T), tx1 = floor((box.right() - EPS) / T);
+        if (anySolidInRow(map, row, tx0, tx1)) return true;
+        return !ignoreOneWay && feetOnRowTop(box, row) && anyOneWayInRow(map, row, tx0, tx1);
+    }
+
+    /** True if the box stands on one-way platform tops with no solid tile under any part of it. */
+    public static boolean onOneWayOnly(Rect box, TileMap map) {
+        int row = floor((box.bottom() + 0.01) / T);
+        int tx0 = floor(box.x() / T), tx1 = floor((box.right() - EPS) / T);
+        return feetOnRowTop(box, row) && !anySolidInRow(map, row, tx0, tx1) && anyOneWayInRow(map, row, tx0, tx1);
+    }
+
+    private static boolean feetOnRowTop(Rect box, int row) {
+        return Math.abs(box.bottom() - row * T) < 0.02;
+    }
+
+    private static boolean anyOneWayInRow(TileMap map, int row, int tx0, int tx1) {
+        for (int tx = tx0; tx <= tx1; tx++) {
+            if (map.isOneWay(tx, row)) return true;
+        }
+        return false;
     }
 
     private static boolean anySolidInRow(TileMap map, int row, int tx0, int tx1) {
