@@ -52,15 +52,18 @@ public class Player extends Entity {
     }
 
     public void render(Graphics g) {
-        if (playerAction == CROUCH) {
-            // Get the correct frame based on custom crouch sequence
-            int xFrame = crouchFrames[aniIndex][0];
-            int yFrame = crouchFrames[aniIndex][1];
+        g.drawImage(frameFor(playerAction, aniIndex), (int) x, (int) y, 128, 80, null);
+    }
 
-            g.drawImage(anims[yFrame][xFrame], (int) x, (int) y, 128, 80, null);
-        }else {
-            g.drawImage(anims[playerAction][aniIndex], (int) x, (int) y, 128, 80, null);
+    /** The sheet frame shown for an animation action at a given frame index. */
+    BufferedImage frameFor(int action, int index) {
+        if (action == CROUCH) {
+            // Get the correct frame based on custom crouch sequence
+            int xFrame = crouchFrames[index][0];
+            int yFrame = crouchFrames[index][1];
+            return anims[yFrame][xFrame];
         }
+        return anims[action][index];
     }
 
     private void updateAnims() {
