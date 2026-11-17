@@ -84,6 +84,21 @@ public class Game implements Runnable{
 	        	frames = 0;
 	        	updates = 0;
 	        }
+
+	        // Rest until the next update or frame is due instead of spinning a full CPU core.
+	        double waitU = (1 - deltaU) * timePerUpdate;
+	        double waitF = (1 - deltaF) * timePerFrame;
+	        long waitNanos = (long) Math.min(waitU, waitF);
+	        if (waitNanos > 2_000_000) {
+	        	try {
+	        		Thread.sleep((waitNanos - 1_000_000) / 1_000_000);
+	        	} catch (InterruptedException e) {
+	        		Thread.currentThread().interrupt();
+	        		return;
+	        	}
+	        } else {
+	        	Thread.onSpinWait();
+	        }
 		}
 	}
 	

@@ -19,7 +19,7 @@ public class Player extends Entity {
     private int aniTick, aniIndex;
     private double aniSpeed = 23;
     private int playerAction = IDLE;
-    private boolean moving = false, attacking = false;
+    private boolean moving = false, attacking = false, facingLeft = false;
     private BufferedImage[][] anims;
     private boolean left, up, right, down, ctrl, equip;
     private float playerSpeed = 2.0f;
@@ -36,7 +36,17 @@ public class Player extends Entity {
     }
 
     public void render(Graphics g) {
-        g.drawImage(frameFor(playerAction, aniIndex), (int) x, (int) y, DRAW_WIDTH, DRAW_HEIGHT, null);
+        BufferedImage frame = frameFor(playerAction, aniIndex);
+        if (facingLeft) {
+            // negative width mirrors the sheet frame horizontally
+            g.drawImage(frame, (int) x + DRAW_WIDTH, (int) y, -DRAW_WIDTH, DRAW_HEIGHT, null);
+        } else {
+            g.drawImage(frame, (int) x, (int) y, DRAW_WIDTH, DRAW_HEIGHT, null);
+        }
+    }
+
+    public boolean isFacingLeft() {
+        return facingLeft;
     }
 
     /** The sheet frame shown for an animation action (= sheet row) at a given frame index. */
@@ -91,9 +101,11 @@ public class Player extends Entity {
         if (left && !right) {
             x -= playerSpeed;
             moving = true;
+            facingLeft = true;
         } else if (!left && right) {
             x += playerSpeed;
             moving = true;
+            facingLeft = false;
         }
 
         if (up && !down) {

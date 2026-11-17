@@ -6,6 +6,7 @@ import static Utils.Constants.PlayerConstats.GetSpriteAmount;
 import static Utils.Constants.PlayerConstats.IDLE;
 import static Utils.Constants.PlayerConstats.RUNNING;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.awt.image.BufferedImage;
@@ -39,6 +40,14 @@ class PlayerFramesTest {
     @Test
     void allElevenColumnsAreLoaded() {
         assertTrue(hasPixels(new Player(0, 0).frameFor(2, 9)));
+    }
+
+    @Test
+    void facingFollowsLastHorizontalDirection() {
+        Player p = new Player(0, 0);
+        p.setLeft(true); p.update(); assertTrue(p.isFacingLeft());
+        p.setLeft(false); p.setRight(true); p.update(); assertFalse(p.isFacingLeft());
+        p.setRight(false); p.update(); assertFalse(p.isFacingLeft()); // keeps facing when stopped
     }
 
     @Test

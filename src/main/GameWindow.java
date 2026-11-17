@@ -12,10 +12,11 @@ public class GameWindow {
 		jframe =  new JFrame();
                  
         jframe.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        jframe.setTitle("AMBOT");
         jframe.add(gamePanel);
-        jframe.setLocationRelativeTo(null);
         jframe.setResizable(true);
         jframe.pack();
+        jframe.setLocationRelativeTo(null); // after pack(), so the real size is centred
         jframe.setVisible(true); 
 		jframe.addWindowFocusListener(new WindowFocusListener() {
 
