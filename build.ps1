@@ -5,9 +5,10 @@
 #   test     compile and run the JUnit tests in test\
 #   run      compile and start the game
 #   smoke    start the game, drive it with scripted input, save frames + UPS/FPS/CPU to build\smoke
+#   levels   convert levels-src\**\*.txt into resources\levels\**\*.tmx (see docs\LEVELS.md)
 #   clean    delete build\
 param(
-    [ValidateSet('deps', 'compile', 'test', 'run', 'smoke', 'clean')]
+    [ValidateSet('deps', 'compile', 'test', 'run', 'smoke', 'levels', 'clean')]
     [string]$Task = 'run',
     [string]$Select
 )
@@ -85,5 +86,6 @@ switch ($Task) {
     'test'    { Invoke-Tests }
     'run'     { Invoke-Compile; Invoke-Checked $Java @('-cp', 'build\classes', $MainClass) }
     'smoke'   { [void](Invoke-CompileTests); Invoke-Checked $Java @('-cp', 'build\classes;build\test-classes', 'ambot.tools.SmokeRun', 'build\smoke') }
+    'levels'  { [void](Invoke-CompileTests); Invoke-Checked $Java @('-cp', 'build\classes;build\test-classes', 'ambot.tools.AsciiTmx', 'levels-src', 'resources') }
     'clean'   { if (Test-Path build) { Remove-Item -Recurse -Force build } }
 }
