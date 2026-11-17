@@ -1,0 +1,20 @@
+package ambot.entities.player;
+
+/** How the player feels to control. Speeds are logical pixels per tick at 60 UPS. */
+public final class PlayerTuning {
+    private PlayerTuning() {
+    }
+
+    public static final double RUN_SPEED = 2.0;
+    public static final double JUMP_VELOCITY = -6.0;
+    /** Releasing jump early caps the upward speed here, giving a short hop. */
+    public static final double JUMP_CUT_VELOCITY = -2.0;
+    /** Ticks after running off a ledge during which a jump still works. */
+    public static final int COYOTE_TICKS = 6;
+    /** Ticks a jump press is remembered before landing. */
+    public static final int JUMP_BUFFER_TICKS = 6;
+    public static final int HITBOX_W = 14;
+    public static final int HITBOX_H = 28;
+    /** The body's centre column inside the 50-px sheet cell. */
+    public static final int SPRITE_CENTER_X = 21;
+}
