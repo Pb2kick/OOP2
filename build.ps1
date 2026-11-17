@@ -13,7 +13,7 @@ param(
 $ErrorActionPreference = 'Stop'
 Set-Location -LiteralPath $PSScriptRoot
 
-$MainClass = 'main.MainClass'
+$MainClass = 'ambot.Main'
 $JunitVersion = '1.11.4'
 $JunitJar = "lib\junit-platform-console-standalone-$JunitVersion.jar"
 $JunitUrl = "https://repo1.maven.org/maven2/org/junit/platform/junit-platform-console-standalone/$JunitVersion/junit-platform-console-standalone-$JunitVersion.jar"
