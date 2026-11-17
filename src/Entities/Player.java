@@ -3,7 +3,6 @@ package Entities;
 import static Utils.Constants.PlayerConstats.GetSpriteAmount;
 import static Utils.Constants.PlayerConstats.IDLE;
 import static Utils.Constants.PlayerConstats.RUNNING;
-import static Utils.Constants.PlayerConstats.WEPEQUIP;
 import static Utils.Constants.PlayerConstats.ATTACK;
 import static Utils.Constants.PlayerConstats.CROUCH;
 
@@ -15,6 +14,8 @@ import java.io.InputStream;
 import javax.imageio.ImageIO;
 
 public class Player extends Entity {
+    /** Sheet frames are 50x37; drawn at exactly 3x so the sprite is not stretched. */
+    public static final int DRAW_WIDTH = 150, DRAW_HEIGHT = 111;
     private int aniTick, aniIndex;
     private double aniSpeed = 23;
     private int playerAction = IDLE;
@@ -22,23 +23,6 @@ public class Player extends Entity {
     private BufferedImage[][] anims;
     private boolean left, up, right, down, ctrl, equip;
     private float playerSpeed = 2.0f;
-
-    // Custom frame sequence for CROUCH animation
-    private final int[][] crouchFrames = {
-        {4, 0}, // (4,0)
-        {5, 0}, // (5,0)
-        {6, 0}, // (6,0)
-        {0, 1}  // (0,1)
-    };
-
-	// Custom frame sequence for CROUCH animation
-    private final int[][] WepEquipFrames = {
-        {5, 3}, 
-        {5, 4}, 
-        {5, 5},
-        {5, 6} 
-    };
-
 
     public Player(float x, float y) {
         super(x, y);
@@ -52,17 +36,11 @@ public class Player extends Entity {
     }
 
     public void render(Graphics g) {
-        g.drawImage(frameFor(playerAction, aniIndex), (int) x, (int) y, 128, 80, null);
+        g.drawImage(frameFor(playerAction, aniIndex), (int) x, (int) y, DRAW_WIDTH, DRAW_HEIGHT, null);
     }
 
-    /** The sheet frame shown for an animation action at a given frame index. */
+    /** The sheet frame shown for an animation action (= sheet row) at a given frame index. */
     BufferedImage frameFor(int action, int index) {
-        if (action == CROUCH) {
-            // Get the correct frame based on custom crouch sequence
-            int xFrame = crouchFrames[index][0];
-            int yFrame = crouchFrames[index][1];
-            return anims[yFrame][xFrame];
-        }
         return anims[action][index];
     }
 
@@ -71,19 +49,10 @@ public class Player extends Entity {
 
         if (aniTick >= aniSpeed) {
             aniTick = 0;
-
-            if (playerAction == CROUCH) {
-                aniIndex++;
-                if (aniIndex >= crouchFrames.length) {
-                    aniIndex = 0; // Reset to first frame in crouch sequence
-					attacking =false;
-                }
-            } else {
-                aniIndex++;
-                if (aniIndex >= GetSpriteAmount(playerAction)) {
-                    aniIndex = 0; // Reset normal animation
-					attacking = false;
-                }
+            aniIndex++;
+            if (aniIndex >= GetSpriteAmount(playerAction)) {
+                aniIndex = 0; // Reset animation
+                attacking = false;
             }
         }
     }
@@ -141,7 +110,7 @@ public class Player extends Entity {
 
         try {
             BufferedImage img = ImageIO.read(is);
-            anims = new BufferedImage[11][7];
+            anims = new BufferedImage[img.getHeight() / 37][img.getWidth() / 50];
 
             for (int j = 0; j < anims.length; j++) {
                 for (int i = 0; i < anims[j].length; i++) {

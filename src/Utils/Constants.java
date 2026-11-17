@@ -14,7 +14,7 @@ public class Constants {
 		 public final static int IDLE = 0;
 		 public final static int ATTACK = 6;
 		 public final static int JUMP =2;
-		 public static final int CROUCH = 99;
+		 public static final int CROUCH = 9; // row 9 of the reworked sheet
 		 public static final int WEPEQUIP = 90;
 		 
 		 public static int GetSpriteAmount(int player_action) {
@@ -22,6 +22,7 @@ public class Constants {
 				 case RUNNING:
 					 return 6;
 				 case IDLE:
+				 case CROUCH:
 					 return 4;
 				 case ATTACK:
 				 case JUMP:
