@@ -14,7 +14,7 @@ public final class PlayerAnimations {
     private PlayerAnimations() {
     }
 
-    public static final String SHEET_PATH = "/Betteradventurer-Sheet.png";
+    public static final String SHEET_PATH = "/sprites/Betteradventurer-Sheet.png";
     public static final int CELL_W = 50, CELL_H = 37;
 
     //                                                   name      row col frames ticks loop  footY

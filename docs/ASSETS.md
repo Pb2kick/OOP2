@@ -4,7 +4,7 @@ Every asset the game uses is listed here. The in-game Credits screen is built fr
 
 | File | Pack | Author | URL | License (as stated on the page, checked 2026-11-17) | Notes |
 |---|---|---|---|---|---|
-| `resources/Betteradventurer-Sheet.png` | Animated Pixel Adventurer | rvros | https://rvros.itch.io/animated-pixel-hero | "You can use this asset for personal and commercial purpose. Credit is not required but would be appreciated." Modifying is allowed. **You may not resell or redistribute the asset itself.** Name-your-own-price download. | The original team re-gridded it to one animation per row and hand-edited 4 frames. The original sheet is kept at `resources/adventurer-Sheet.png`. |
+| `resources/sprites/Betteradventurer-Sheet.png` | Animated Pixel Adventurer | rvros | https://rvros.itch.io/animated-pixel-hero | "You can use this asset for personal and commercial purpose. Credit is not required but would be appreciated." Modifying is allowed. **You may not resell or redistribute the asset itself.** Name-your-own-price download. | The original team re-gridded it to one animation per row and hand-edited 4 frames. The original sheet is kept, unshipped, at `art/source/adventurer-Sheet.png`. |
 
 ## What the licenses mean for this repo
 

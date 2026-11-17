@@ -4,9 +4,10 @@
 #   compile  compile src\ into build\classes and copy resources\
 #   test     compile and run the JUnit tests in test\
 #   run      compile and start the game
+#   smoke    start the game, drive it with scripted input, save frames + UPS/FPS/CPU to build\smoke
 #   clean    delete build\
 param(
-    [ValidateSet('deps', 'compile', 'test', 'run', 'clean')]
+    [ValidateSet('deps', 'compile', 'test', 'run', 'smoke', 'clean')]
     [string]$Task = 'run',
     [string]$Select
 )
@@ -27,7 +28,7 @@ if (-not (Test-Path -LiteralPath $Javac)) {
 }
 
 function Invoke-Checked([string]$exe, [string[]]$arguments) {
-    & $exe @arguments
+    & $exe @arguments | Out-Host   # to the console, never into a function's return value
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 }
 
@@ -61,13 +62,18 @@ function Invoke-Compile {
     Copy-Item -Path 'resources\*' -Destination 'build\classes' -Recurse -Force
 }
 
-function Invoke-Tests {
+function Invoke-CompileTests {
     Get-Deps
     Invoke-Compile
     New-Item -ItemType Directory -Force build\test-classes | Out-Null
     $count = Write-SourceList 'test' 'build\test-sources.txt'
-    if ($count -eq 0) { Write-Host 'No tests found.'; return }
+    if ($count -eq 0) { return $false }
     Invoke-Checked $Javac @('--release', '21', '-encoding', 'UTF-8', '-cp', "build\classes;$JunitJar", '-d', 'build\test-classes', '@build\test-sources.txt')
+    return $true
+}
+
+function Invoke-Tests {
+    if (-not (Invoke-CompileTests)) { Write-Host 'No tests found.'; return }
     $runArgs = @('-jar', $JunitJar, 'execute', '--disable-banner', '--details=tree', '--class-path', 'build\classes;build\test-classes')
     if ($Select) { $runArgs += @('--select-class', $Select) } else { $runArgs += '--scan-class-path' }
     Invoke-Checked $Java $runArgs
@@ -78,5 +84,6 @@ switch ($Task) {
     'compile' { Invoke-Compile }
     'test'    { Invoke-Tests }
     'run'     { Invoke-Compile; Invoke-Checked $Java @('-cp', 'build\classes', $MainClass) }
+    'smoke'   { [void](Invoke-CompileTests); Invoke-Checked $Java @('-cp', 'build\classes;build\test-classes', 'ambot.tools.SmokeRun', 'build\smoke') }
     'clean'   { if (Test-Path build) { Remove-Item -Recurse -Force build } }
 }

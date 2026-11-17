@@ -9,7 +9,7 @@ import java.awt.image.BufferedImage;
 import org.junit.jupiter.api.Test;
 
 class SpriteSheetTest {
-    private static final SpriteSheet SHEET = SpriteSheet.load("/Betteradventurer-Sheet.png", 50, 37);
+    private static final SpriteSheet SHEET = SpriteSheet.load("/sprites/Betteradventurer-Sheet.png", 50, 37);
 
     @Test
     void loadsReworkedSheetAsElevenByEleven() {
