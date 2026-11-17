@@ -67,7 +67,9 @@ class LevelFilesTest {
             Path tmx = RESOURCES.resolve("levels").resolve(rel.substring(0, rel.length() - 4) + ".tmx");
             assertTrue(Files.exists(tmx), tmx + " is missing: run .\\build.cmd levels");
             assertEquals(lf(AsciiTmx.convert(Files.readString(src, UTF_8))), lf(Files.readString(tmx, UTF_8)),
-                    tmx + " is out of date: run .\\build.cmd levels");
+                    tmx + " doesn't match " + src + ". If you changed the .txt, run .\\build.cmd levels."
+                            + " If you edited the .tmx in Tiled, running levels would throw those edits away:"
+                            + " delete " + src + " instead, so the .tmx becomes the source.");
         }
     }
 

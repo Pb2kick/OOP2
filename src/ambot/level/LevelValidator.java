@@ -39,14 +39,13 @@ public final class LevelValidator {
             switch (o.type()) {
                 case LevelObject.ENEMY -> knownType(o, KNOWN_ENEMY_TYPES, problems);
                 case LevelObject.PICKUP -> knownType(o, KNOWN_PICKUP_TYPES, problems);
-                case LevelObject.CHECKPOINT -> notDangerous(o.type(), at, o.bounds(), map, problems);
-                case LevelObject.PLAYER_SPAWN -> {
-                    Rect b = o.bounds();
-                    double feetX = b.x() + b.w() / 2, feetY = b.bottom();
-                    Rect body = new Rect(feetX - PlayerTuning.HITBOX_W / 2.0, feetY - PlayerTuning.HITBOX_H,
-                            PlayerTuning.HITBOX_W, PlayerTuning.HITBOX_H);
-                    notDangerous(o.type(), at, body, map, problems);
+                case LevelObject.CHECKPOINT -> {
+                    // the player touches the flag's box, then respawns standing on its bottom-centre
+                    needsSize(o, at, problems);
+                    notDangerous(o.type(), at, respawnBody(o.bounds()), map, problems);
                 }
+                case LevelObject.PLAYER_SPAWN -> notDangerous(o.type(), at, respawnBody(o.bounds()), map, problems);
+                case LevelObject.EXIT -> needsSize(o, at, problems);
                 default -> {
                 }
             }
@@ -86,6 +85,20 @@ public final class LevelValidator {
             problems.add(o.type() + " at " + at(o.bounds()) + " has no 'type' property");
         } else if (!known.contains(type)) {
             problems.add("unknown " + o.type() + " type '" + type + "' at " + at(o.bounds()));
+        }
+    }
+
+    /** The player's 14x28 body standing on the bottom-centre of a box (a point for spawns). */
+    private static Rect respawnBody(Rect b) {
+        double feetX = b.x() + b.w() / 2, feetY = b.bottom();
+        return new Rect(feetX - PlayerTuning.HITBOX_W / 2.0, feetY - PlayerTuning.HITBOX_H,
+                PlayerTuning.HITBOX_W, PlayerTuning.HITBOX_H);
+    }
+
+    /** Checkpoints and exits are touched by overlap, so a point (0x0) one could never be reached. */
+    private static void needsSize(LevelObject o, String at, List<String> problems) {
+        if (o.bounds().w() <= 0 || o.bounds().h() <= 0) {
+            problems.add(o.type() + " at " + at + " has no size; draw it as a rectangle, not a point");
         }
     }
 

@@ -6,7 +6,7 @@ Levels are [Tiled](https://www.mapeditor.org/) `.tmx` maps in `resources/levels/
 
 1. Edit or add `levels-src/<folder>/<name>.txt`.
 2. Run `.\build.cmd levels`. This writes `resources/levels/<folder>/<name>.tmx` and refreshes the placeholder tileset.
-3. Run `.\build.cmd test`. `LevelFilesTest` validates every level and fails if a `.tmx` is older than its `.txt`. `RouteTest` replays each level's `.route` and checks it can be finished.
+3. Run `.\build.cmd test`. `LevelFilesTest` validates every level and fails if a `.tmx` no longer matches what its `.txt` generates. `RouteTest` replays each level's `.route` and checks it can be finished.
 4. Run `.\build.cmd preview`. This writes a whole-level PNG for every level to `build\preview\`.
 
 The generated `.tmx` files open in Tiled. Changes saved in Tiled are overwritten the next time `levels` runs, unless you delete that level's `.txt` first. The `.tmx` then becomes the source.

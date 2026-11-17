@@ -172,6 +172,30 @@ class LevelValidatorTest {
     }
 
     @Test
+    void flagsCheckpointWhoseRespawnBodyTouchesHazard() {
+        List<LevelObject> objs = validObjects();
+        // a short 16x16 flag on the floor: the flag misses the spike above it, the 14x28 respawn body doesn't
+        objs.set(2, new LevelObject(LevelObject.CHECKPOINT, new Rect(64, 64, 16, 16), Map.of()));
+        assertProblem(check(objs,
+                "..........",
+                "..........",
+                "..........",
+                "....^.....",
+                "..........",
+                "##########"), "checkpoint", "hazard");
+    }
+
+    @Test
+    void flagsZeroSizeCheckpointAndExit() {
+        List<LevelObject> objs = validObjects();
+        objs.set(1, point(LevelObject.EXIT, 136, 80, Map.of()));
+        objs.set(2, point(LevelObject.CHECKPOINT, 72, 88, Map.of()));
+        List<String> problems = check(objs, ROOM);
+        assertProblem(problems, "exit", "no size");
+        assertProblem(problems, "checkpoint", "no size");
+    }
+
+    @Test
     void flagsObjectOutsideMap() {
         List<LevelObject> objs = validObjects();
         objs.set(1, rect(LevelObject.EXIT, 200, 48));
