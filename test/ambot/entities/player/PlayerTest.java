@@ -109,7 +109,7 @@ class PlayerTest {
     }
 
     @Test
-    void tapJumpStillLeavesGround() {
+    void tapJumpGivesShortButVisibleHop() {
         Player p = standing(32);
         p.update(tap(Action.JUMP), ROOM);
         double minY = p.y();
@@ -118,7 +118,8 @@ class PlayerTest {
             minY = Math.min(minY, p.y());
         }
         double rise = STANDING_Y - minY;
-        assertTrue(rise > 0 && rise < 10, "tap rise was " + rise);
+        // a quick tap must clearly leave the ground (about a tile and a half), but stay well below a full jump
+        assertTrue(rise >= 15 && rise <= 30, "tap rise was " + rise);
     }
 
     @Test

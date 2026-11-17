@@ -9,6 +9,8 @@ public final class PlayerTuning {
     public static final double JUMP_VELOCITY = -6.0;
     /** Releasing jump early caps the upward speed here, giving a short hop. */
     public static final double JUMP_CUT_VELOCITY = -2.0;
+    /** A jump always rises at full speed for this many ticks, so even a quick tap gives a visible hop. */
+    public static final int MIN_JUMP_TICKS = 4;
     /** Ticks after running off a ledge during which a jump still works. */
     public static final int COYOTE_TICKS = 6;
     /** Ticks a jump press is remembered before landing. */

@@ -14,6 +14,7 @@ import ambot.entities.player.PlayerAnimations;
 import ambot.gfx.SpriteSheet;
 import ambot.input.InputState;
 import ambot.input.KeyBindings;
+import ambot.input.KeyRepeatFilter;
 import ambot.input.SwingInputAdapter;
 import ambot.states.GameContext;
 import ambot.states.MainMenuState;
@@ -37,7 +38,8 @@ public final class Game implements GameContext {
             new BufferedImage(W, H, BufferedImage.TYPE_INT_RGB),
             new BufferedImage(W, H, BufferedImage.TYPE_INT_RGB) };
     private int back;
-    private final AtomicBoolean focusLost = new AtomicBoolean();
+    private final AtomicBoolean pauseRequested = new AtomicBoolean();
+    private final KeyRepeatFilter oneShotKeys = new KeyRepeatFilter();
     private volatile boolean debugOverlay;
 
     public Game() {
@@ -47,12 +49,22 @@ public final class Game implements GameContext {
         screen.addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
-                if (e.getKeyCode() == KeyEvent.VK_F11) window.toggleFullscreen();
-                if (e.getKeyCode() == KeyEvent.VK_F3) debugOverlay = !debugOverlay;
+                int code = e.getKeyCode();
+                // ignore OS auto-repeat so holding F11 does not flicker in and out of fullscreen
+                if (code == KeyEvent.VK_F11 && oneShotKeys.firstPress(code)) window.toggleFullscreen();
+                if (code == KeyEvent.VK_F3 && oneShotKeys.firstPress(code)) debugOverlay = !debugOverlay;
+            }
+
+            @Override
+            public void keyReleased(KeyEvent e) {
+                oneShotKeys.released(e.getKeyCode());
             }
         });
         window = new GameWindow(screen, GameConfig.TITLE);
-        window.onFocusLost(() -> focusLost.set(true));
+        window.onFocusLost(() -> {
+            input.releaseAll();
+            oneShotKeys.reset();
+        }, () -> pauseRequested.set(true));
         loop = new GameLoop(new FixedStep(GameConfig.UPS, GameConfig.MAX_CATCH_UP), this::tick, this::render);
         states.replaceAll(new MainMenuState(this));
     }
@@ -63,8 +75,7 @@ public final class Game implements GameContext {
     }
 
     private void tick() {
-        if (focusLost.getAndSet(false)) {
-            input.releaseAll();
+        if (pauseRequested.getAndSet(false)) {
             states.focusLost();
         }
         states.update(input.poll());

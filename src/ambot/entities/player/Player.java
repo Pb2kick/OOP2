@@ -6,6 +6,7 @@ import static ambot.entities.player.PlayerTuning.HITBOX_W;
 import static ambot.entities.player.PlayerTuning.JUMP_BUFFER_TICKS;
 import static ambot.entities.player.PlayerTuning.JUMP_CUT_VELOCITY;
 import static ambot.entities.player.PlayerTuning.JUMP_VELOCITY;
+import static ambot.entities.player.PlayerTuning.MIN_JUMP_TICKS;
 import static ambot.entities.player.PlayerTuning.RUN_SPEED;
 import static ambot.entities.player.PlayerTuning.SPRITE_CENTER_X;
 
@@ -25,6 +26,8 @@ public class Player extends Creature {
     private final SpriteSheet sheet;
     private PlayerState state = PlayerState.IDLE;
     private int coyote, buffer;
+    /** Ticks since take-off, or -1 when not in a jump. */
+    private int jumpTicks = -1;
 
     public Player(double x, double y, SpriteSheet sheet) {
         super(x, y, HITBOX_W, HITBOX_H);
@@ -57,15 +60,19 @@ public class Player extends Creature {
             vy = JUMP_VELOCITY;
             buffer = 0;
             coyote = 0;
+            jumpTicks = 0;
         }
 
-        // 5. releasing jump early cuts the jump short
-        if (!c.isHeld(Action.JUMP) && vy < JUMP_CUT_VELOCITY) {
+        // 5. releasing jump early cuts the jump short (after a minimum rise)
+        boolean pastMinimumRise = jumpTicks < 0 || jumpTicks >= MIN_JUMP_TICKS;
+        if (!c.isHeld(Action.JUMP) && vy < JUMP_CUT_VELOCITY && pastMinimumRise) {
             vy = JUMP_CUT_VELOCITY;
         }
+        if (jumpTicks >= 0) jumpTicks++;
 
         // 6. physics
         applyGravityAndMove(map);
+        if (onGround) jumpTicks = -1;
 
         // 7. state and animation
         if (state != PlayerState.ATTACK || animator.isFinished()) {
@@ -91,6 +98,7 @@ public class Player extends Creature {
         vy = 0;
         coyote = 0;
         buffer = 0;
+        jumpTicks = -1;
         onGround = false;
         state = PlayerState.IDLE;
         animator.play(PlayerAnimations.IDLE);
