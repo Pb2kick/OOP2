@@ -33,15 +33,21 @@ Every row below `---` must be the same length. One character is one 16×16 tile.
 |---|---|
 | `#` | Solid ground. It gets a grass top where the tile above is not `#`. |
 | `-` | One-way platform: jump up through it, stand on it, press ↓ to drop down |
-| `^` | Hazard (spikes): touching it sends you back to the last checkpoint |
+| `^` | Hazard (spikes): touching it costs a heart and knocks you back |
 | `b` | Background decoration (drawn behind, no collision) |
 | `f` | Foreground decoration (drawn in front of the player, no collision) |
 | `P` | Player spawn: feet on the bottom of this cell. Exactly one per level. |
 | `C` | Checkpoint: 1 tile wide, 2 tall, bottom on this cell's bottom |
 | `E` | Exit: same size as a checkpoint. Exactly one per level. |
+| `w` | Walker enemy: patrols, turning at walls and ledges. Two sword hits. |
+| `W` | Walker that drops a heart when defeated |
+| `s` | Shooter enemy: a turret that fires bolts at standing height (crouch or jump them). Two sword hits. |
+| `h` | Heart pickup: heals one heart, and only when you're hurt |
 | `.` | Empty |
 
-Falling below the bottom of the map counts as a pit, and sends you back to the last checkpoint.
+Falling below the bottom of the map counts as a pit: instant death, then Game Over with Retry from the last checkpoint. Running out of hearts ends the same way.
+
+Enemies, hearts and the player stand with their feet on the bottom of their cell. A walker on a platform one tile high can be fought from the ground beside it: it turns at the ledge inside your sword's reach, but can't touch you.
 
 ## Tiled conventions
 
@@ -50,7 +56,7 @@ These are the rules the loader enforces:
 - Tile layers stored as CSV (Map Properties → Tile Layer Format → CSV).
 - One tileset, embedded in the map (not an external `.tsx`).
 - Tile layers named `background`, `solid`, `oneway`, `hazard` and `foreground`. Only `solid` is required.
-- One object layer named `entities`, holding objects of these types: `player_spawn`, `checkpoint`, `exit`, `enemy` (with a `type` property), `pickup` (with a `type` property; `heart` is the only one) and `boss_arena`.
+- One object layer named `entities`, holding objects of these types: `player_spawn`, `checkpoint`, `exit`, `enemy` (with a `type` property of `walker` or `shooter`, and an optional `drop` property of `heart`), `pickup` (with a `type` property; `heart` is the only one) and `boss_arena`.
 
 `LevelValidator` also checks for:
 - exactly one spawn and one exit

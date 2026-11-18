@@ -10,7 +10,8 @@ public final class LevelCatalog {
     public static final List<String> PLACEHOLDER_PATHS = List.of(
             "/levels/placeholder/p1.tmx",
             "/levels/placeholder/p2.tmx",
-            "/levels/placeholder/p3.tmx");
+            "/levels/placeholder/p3.tmx",
+            "/levels/placeholder/p4.tmx");
 
     private final List<Supplier<Level>> levels;
 

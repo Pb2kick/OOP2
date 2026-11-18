@@ -1,0 +1,93 @@
+# First Blood. Hitbox x = 33 + 2*tick while holding RIGHT. One attack cycle = "1 ATTACK" + "35 -".
+60 RIGHT           # stop in front of the first walker
+1 ATTACK
+35 -
+1 ATTACK
+35 -
+1 ATTACK
+35 -
+1 ATTACK
+35 -
+1 ATTACK
+35 -
+1 ATTACK
+35 -
+108 RIGHT          # stand against the low platform; its walker patrols into the blade
+1 ATTACK
+35 -
+1 ATTACK
+35 -
+1 ATTACK
+35 -
+1 ATTACK
+35 -
+1 ATTACK
+35 -
+20 RIGHT+JUMP      # onto the platform
+75 RIGHT           # just outside the shooter's range
+58 RIGHT
+44 DOWN            # duck the first bolt until it has passed
+21 RIGHT
+1 ATTACK
+35 -
+10 RIGHT
+1 ATTACK
+35 -
+10 RIGHT
+1 ATTACK
+35 -
+77 RIGHT           # to x=904: take-off window for the spike strip is x 898..910
+20 RIGHT+JUMP      # over the spikes at columns 58-59
+88 RIGHT           # past the heart, to x=1120: right edge 1 px short of the low platform
+1 ATTACK
+35 -
+1 ATTACK
+35 -
+1 ATTACK
+35 -
+1 ATTACK
+35 -
+1 ATTACK
+35 -
+1 ATTACK
+35 -
+1 ATTACK
+35 -
+1 ATTACK
+35 -
+1 ATTACK
+35 -
+1 ATTACK
+35 -
+1 ATTACK
+35 -
+1 ATTACK
+35 -
+1 ATTACK
+35 -
+1 ATTACK
+35 -
+1 ATTACK
+35 -
+1 ATTACK
+35 -
+1 ATTACK
+35 -
+1 ATTACK
+35 -
+1 ATTACK
+35 -
+1 ATTACK
+35 -
+1 ATTACK
+35 -
+1 ATTACK
+35 -
+1 ATTACK
+35 -
+1 ATTACK
+35 -
+1 ATTACK
+35 -
+20 RIGHT+JUMP      # onto the platform
+300 RIGHT          # to the exit at column 92
