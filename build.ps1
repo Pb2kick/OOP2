@@ -87,7 +87,7 @@ switch ($Task) {
     'test'    { Invoke-Tests }
     'run'     { Invoke-Compile; Invoke-Checked $Java @('-cp', 'build\classes', $MainClass) }
     'smoke'   { [void](Invoke-CompileTests); Invoke-Checked $Java @('-cp', 'build\classes;build\test-classes', 'ambot.tools.SmokeRun', 'build\smoke') }
-    'levels'  { [void](Invoke-CompileTests); Invoke-Checked $Java @('-cp', 'build\classes;build\test-classes', 'ambot.tools.AsciiTmx', 'levels-src', 'resources') }
+    'levels'  { [void](Invoke-CompileTests); Invoke-Checked $Java @('-cp', 'build\classes;build\test-classes', 'ambot.tools.AsciiTmx', 'levels-src', 'resources'); Invoke-Checked $Java @('-cp', 'build\classes;build\test-classes', 'ambot.tools.PlaceholderAudio', 'resources') }
     'preview' { [void](Invoke-CompileTests); Invoke-Checked $Java @('-cp', 'build\classes;build\test-classes', 'ambot.tools.LevelPreview', 'build\preview') }
     'clean'   { if (Test-Path build) { Remove-Item -Recurse -Force build } }
 }
