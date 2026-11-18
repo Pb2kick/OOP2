@@ -1,12 +1,19 @@
 package ambot.entities.player;
 
+import static ambot.entities.player.PlayerTuning.BLINK_TICKS;
 import static ambot.entities.player.PlayerTuning.COYOTE_TICKS;
+import static ambot.entities.player.PlayerTuning.DEATH_TICKS;
 import static ambot.entities.player.PlayerTuning.DROP_THROUGH_TICKS;
 import static ambot.entities.player.PlayerTuning.HITBOX_H;
 import static ambot.entities.player.PlayerTuning.HITBOX_W;
+import static ambot.entities.player.PlayerTuning.HURT_TICKS;
+import static ambot.entities.player.PlayerTuning.INVINCIBLE_TICKS;
 import static ambot.entities.player.PlayerTuning.JUMP_BUFFER_TICKS;
 import static ambot.entities.player.PlayerTuning.JUMP_CUT_VELOCITY;
 import static ambot.entities.player.PlayerTuning.JUMP_VELOCITY;
+import static ambot.entities.player.PlayerTuning.KNOCKBACK_X;
+import static ambot.entities.player.PlayerTuning.KNOCKBACK_Y;
+import static ambot.entities.player.PlayerTuning.MAX_HEARTS;
 import static ambot.entities.player.PlayerTuning.MIN_JUMP_TICKS;
 import static ambot.entities.player.PlayerTuning.RUN_SPEED;
 import static ambot.entities.player.PlayerTuning.SPRITE_CENTER_X;
@@ -23,7 +30,11 @@ import ambot.input.Controls;
 import ambot.level.TileCollider;
 import ambot.level.TileMap;
 
-/** The adventurer: runs, jumps (with coyote time and jump buffering), crouches, drops through one-way platforms and attacks. */
+/**
+ * The adventurer: runs, jumps (with coyote time and jump buffering), crouches, drops through
+ * one-way platforms and attacks. Has three hearts; a hit knocks the player back with a short
+ * spell of blinking invincibility (spec section 5.4).
+ */
 public class Player extends Creature {
     private final SpriteSheet sheet;
     private PlayerState state = PlayerState.IDLE;
@@ -32,14 +43,30 @@ public class Player extends Creature {
     private int jumpTicks = -1;
     /** Ticks left during which one-way platforms are ignored. */
     private int dropTicks;
+    private int hurtTicks, invincibleTicks, deathTicks;
 
     public Player(double x, double y, SpriteSheet sheet) {
-        super(x, y, HITBOX_W, HITBOX_H);
+        super(x, y, HITBOX_W, HITBOX_H, MAX_HEARTS);
         this.sheet = sheet;
         animator.play(PlayerAnimations.IDLE);
     }
 
     public void update(Controls c, TileMap map) {
+        if (invincibleTicks > 0) invincibleTicks--;
+        if (state == PlayerState.DEAD) {
+            vx = 0;
+            applyGravityAndMove(map);
+            deathTicks++;
+            animate();
+            return;
+        }
+        if (state == PlayerState.HURT) {
+            applyGravityAndMove(map); // knockback: no input until the hurt is over
+            if (--hurtTicks <= 0) state = onGround ? PlayerState.IDLE : PlayerState.FALL;
+            animate();
+            return;
+        }
+
         // 0. down on a one-way platform drops through it (drop wins over crouch, spec section 7)
         if (c.wasPressed(Action.DOWN) && onGround && TileCollider.onOneWayOnly(hitbox(), map)) {
             dropTicks = DROP_THROUGH_TICKS;
@@ -96,11 +123,58 @@ public class Player extends Creature {
                 state = PlayerState.IDLE;
             }
         }
+        animate();
+    }
+
+    private void animate() {
         animator.play(PlayerAnimations.forState(state));
         animator.tick();
     }
 
-    /** Puts the player back at a position, standing still. */
+    @Override
+    protected void onDamaged(double fromX) {
+        if (health == 0) {
+            kill();
+            return;
+        }
+        state = PlayerState.HURT;
+        hurtTicks = HURT_TICKS;
+        invincibleTicks = INVINCIBLE_TICKS;
+        double centre = x + width / 2;
+        double away = centre == fromX ? (facing == Facing.RIGHT ? -1 : 1) : Math.signum(centre - fromX);
+        vx = KNOCKBACK_X * away;
+        vy = KNOCKBACK_Y;
+        jumpTicks = -1;
+        buffer = 0;
+        dropTicks = 0;
+        animator.play(PlayerAnimations.HURT);
+    }
+
+    /** Instant death (pits): works even while invincible. */
+    public void kill() {
+        health = 0;
+        state = PlayerState.DEAD;
+        vx = 0;
+        hurtTicks = 0;
+        deathTicks = 0;
+        animator.play(PlayerAnimations.DEATH);
+    }
+
+    /** True once the death animation has had {@link PlayerTuning#DEATH_TICKS} ticks. */
+    public boolean deathFinished() {
+        return state == PlayerState.DEAD && deathTicks >= DEATH_TICKS;
+    }
+
+    public void restoreHealth() {
+        health = maxHealth;
+    }
+
+    @Override
+    public boolean isInvincible() {
+        return invincibleTicks > 0;
+    }
+
+    /** Puts the player back at a position, standing still, no longer hurt or dying. */
     public void respawn(double newX, double newY) {
         x = newX;
         y = newY;
@@ -110,6 +184,9 @@ public class Player extends Creature {
         buffer = 0;
         jumpTicks = -1;
         dropTicks = 0;
+        hurtTicks = 0;
+        invincibleTicks = 0;
+        deathTicks = 0;
         onGround = false;
         state = PlayerState.IDLE;
         animator.play(PlayerAnimations.IDLE);
@@ -121,6 +198,7 @@ public class Player extends Creature {
 
     @Override
     public void render(Graphics2D g) {
+        if (invincibleTicks > 0 && (invincibleTicks / BLINK_TICKS) % 2 == 1) return;
         AnimationClip clip = animator.clip();
         BufferedImage frame = sheet.frame(animator.column(), clip.row());
         int cellW = PlayerAnimations.CELL_W;

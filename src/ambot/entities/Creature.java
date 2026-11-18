@@ -4,16 +4,61 @@ import ambot.gfx.Animator;
 import ambot.level.TileCollider;
 import ambot.level.TileMap;
 
-/** An entity that moves under gravity, collides with tiles and is animated. */
-public abstract class Creature extends Entity {
+/** An entity that moves under gravity, collides with tiles, is animated and has health. */
+public abstract class Creature extends Entity implements Damageable {
     protected double vx, vy;
     protected Facing facing = Facing.RIGHT;
     protected boolean onGround;
     protected final Animator animator = new Animator();
+    protected final int maxHealth;
+    protected int health;
 
     protected Creature(double x, double y, double width, double height) {
-        super(x, y, width, height);
+        this(x, y, width, height, 1);
     }
+
+    protected Creature(double x, double y, double width, double height, int maxHealth) {
+        super(x, y, width, height);
+        this.maxHealth = maxHealth;
+        this.health = maxHealth;
+    }
+
+    @Override
+    public int health() {
+        return health;
+    }
+
+    @Override
+    public int maxHealth() {
+        return maxHealth;
+    }
+
+    @Override
+    public boolean isDead() {
+        return health <= 0;
+    }
+
+    @Override
+    public boolean damage(int amount, double fromX) {
+        if (amount <= 0 || isDead() || isInvincible()) return false;
+        health = Math.max(0, health - amount);
+        onDamaged(fromX);
+        return true;
+    }
+
+    @Override
+    public void heal(int amount) {
+        if (amount <= 0 || isDead()) return;
+        health = Math.min(maxHealth, health + amount);
+    }
+
+    /** While true, {@link #damage} does nothing. */
+    protected boolean isInvincible() {
+        return false;
+    }
+
+    /** Called after health has dropped; {@code fromX} is where the hit came from. */
+    protected abstract void onDamaged(double fromX);
 
     /** Applies gravity, then moves horizontally and vertically against the tile map. */
     protected void applyGravityAndMove(TileMap map) {

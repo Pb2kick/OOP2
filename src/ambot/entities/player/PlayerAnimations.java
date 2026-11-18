@@ -24,8 +24,11 @@ public final class PlayerAnimations {
     public static final AnimationClip FALL   = new AnimationClip("FALL",   2, 8, 2, 8,  true,  30);
     public static final AnimationClip CROUCH = new AnimationClip("CROUCH", 9, 0, 4, 10, true,  32);
     public static final AnimationClip ATTACK = new AnimationClip("ATTACK", 6, 0, 7, 5,  false, 36);
+    // row 8: columns 0-3 sword stance (unused), 4-6 hurt recoil, 7-9 collapse to the knees
+    public static final AnimationClip HURT   = new AnimationClip("HURT",   8, 4, 3, 6,  false, 36);
+    public static final AnimationClip DEATH  = new AnimationClip("DEATH",  8, 7, 3, 10, false, 36);
 
-    public static final List<AnimationClip> ALL = List.of(IDLE, RUN, JUMP, FALL, CROUCH, ATTACK);
+    public static final List<AnimationClip> ALL = List.of(IDLE, RUN, JUMP, FALL, CROUCH, ATTACK, HURT, DEATH);
 
     private static final Map<PlayerState, AnimationClip> BY_STATE = new EnumMap<>(Map.of(
             PlayerState.IDLE, IDLE,
@@ -33,7 +36,9 @@ public final class PlayerAnimations {
             PlayerState.JUMP, JUMP,
             PlayerState.FALL, FALL,
             PlayerState.CROUCH, CROUCH,
-            PlayerState.ATTACK, ATTACK));
+            PlayerState.ATTACK, ATTACK,
+            PlayerState.HURT, HURT,
+            PlayerState.DEAD, DEATH));
 
     public static AnimationClip forState(PlayerState state) {
         return BY_STATE.get(state);

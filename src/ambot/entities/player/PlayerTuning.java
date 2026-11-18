@@ -17,6 +17,18 @@ public final class PlayerTuning {
     public static final int JUMP_BUFFER_TICKS = 6;
     /** Ticks during which one-way platforms are ignored after pressing down on one. */
     public static final int DROP_THROUGH_TICKS = 6;
+    /** Health in hearts (spec section 5.4). */
+    public static final int MAX_HEARTS = 3;
+    /** Ticks the player is knocked back and ignores input after a hit. */
+    public static final int HURT_TICKS = 18;
+    /** Ticks of invincibility after a hit, "about 1 second" (spec section 5.4). */
+    public static final int INVINCIBLE_TICKS = 60;
+    public static final double KNOCKBACK_X = 2.5;
+    public static final double KNOCKBACK_Y = -4.0;
+    /** Ticks from death until Game Over may open. */
+    public static final int DEATH_TICKS = 60;
+    /** While invincible the sprite is hidden for this many ticks, then shown for as many. */
+    public static final int BLINK_TICKS = 4;
     public static final int HITBOX_W = 14;
     public static final int HITBOX_H = 28;
     /** The body's centre column inside the 50-px sheet cell. */

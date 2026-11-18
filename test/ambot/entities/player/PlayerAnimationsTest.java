@@ -37,6 +37,15 @@ class PlayerAnimationsTest {
     }
 
     @Test
+    void hurtAndDeathClipsHaveFrames() {
+        for (int col = 4; col <= 9; col++) assertFalse(SHEET.isEmpty(col, 8), "row 8 column " + col);
+        assertEquals(8, PlayerAnimations.HURT.row());
+        assertEquals(4, PlayerAnimations.HURT.startCol());
+        assertEquals(8, PlayerAnimations.DEATH.row());
+        assertEquals(7, PlayerAnimations.DEATH.startCol());
+    }
+
+    @Test
     void everyStateHasAClip() {
         for (PlayerState s : PlayerState.values())
             assertNotNull(PlayerAnimations.forState(s), s.name());
