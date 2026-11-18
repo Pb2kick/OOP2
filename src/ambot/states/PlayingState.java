@@ -5,6 +5,8 @@ import java.awt.Font;
 import java.awt.Graphics2D;
 
 import ambot.core.GameConfig;
+import ambot.entities.Actors;
+import ambot.entities.Facing;
 import ambot.entities.player.Player;
 import ambot.entities.player.PlayerTuning;
 import ambot.gfx.ParallaxBackground;
@@ -17,15 +19,17 @@ import ambot.level.LevelCatalog;
 import ambot.level.LevelRenderer;
 import ambot.level.Rect;
 import ambot.level.Spot;
+import ambot.ui.Hud;
 
 /**
- * Playing one level of a catalog: the player, a camera, checkpoints, hazards and the exit.
- * Until hearts arrive in M3, touching a hazard or falling out of the map sends the player
- * straight back to the respawn point.
+ * Playing one level of a catalog: the player, enemies and pickups, a camera, checkpoints,
+ * hazards, pits and the exit. Hazards cost a heart; pits and running out of hearts end in
+ * Game Over, which can retry from the last checkpoint (spec section 5.4).
  */
 public final class PlayingState implements GameState {
     private static final Color HINT = new Color(0xC2C3C7);
     private static final Font HINT_FONT = new Font(Font.MONOSPACED, Font.PLAIN, 10);
+    private static final String HINT_TEXT = "Esc: pause";
     /** How far below the map the player may fall before it counts as a pit. */
     private static final int FALL_MARGIN = 64;
 
@@ -37,10 +41,11 @@ public final class PlayingState implements GameState {
     private final Camera camera = new Camera(GameConfig.LOGICAL_WIDTH, GameConfig.LOGICAL_HEIGHT);
     private final LevelRenderer renderer;
     private final ParallaxBackground background;
+    private Actors actors;
     private Spot respawn;
     private Rect activeCheckpoint;
     private int deaths;
-    private boolean completed;
+    private boolean completed, gameOverOpen;
 
     /** New Game: the first placeholder level. */
     public PlayingState(GameContext ctx) {
@@ -56,6 +61,7 @@ public final class PlayingState implements GameState {
         this.player = new Player(bodyX(respawn), bodyY(respawn), ctx.playerSheet());
         this.renderer = new LevelRenderer(level);
         this.background = PlaceholderBackgrounds.forWorld(level.world());
+        this.actors = new Actors(level);
         camera.snapTo(player.hitbox(), level.widthPx(), level.heightPx());
     }
 
@@ -75,26 +81,39 @@ public final class PlayingState implements GameState {
             return;
         }
         player.update(c, level.collision());
+        actors.update(player, level.collision());
         Rect body = player.hitbox();
-        for (Rect cp : level.checkpoints()) {
-            if (body.intersects(cp) && !cp.equals(activeCheckpoint)) {
-                activeCheckpoint = cp;
-                respawn = new Spot(cp.x() + cp.w() / 2, cp.bottom());
+        if (!player.isDead()) {
+            for (Rect cp : level.checkpoints()) {
+                if (body.intersects(cp) && !cp.equals(activeCheckpoint)) {
+                    activeCheckpoint = cp;
+                    respawn = new Spot(cp.x() + cp.w() / 2, cp.bottom());
+                }
             }
+            if (level.collision().touchesHazard(body)) {
+                double centre = body.x() + body.w() / 2;
+                player.damage(1, centre + (player.facing() == Facing.RIGHT ? 8 : -8)); // knocked backwards
+            }
+            if (!player.isDead() && player.y() > level.heightPx() + FALL_MARGIN) player.kill();
         }
-        if (level.collision().touchesHazard(body) || player.y() > level.heightPx() + FALL_MARGIN) {
-            die();
-        } else if (!completed && body.intersects(level.exit())) {
+        if (player.deathFinished() && !gameOverOpen) {
+            gameOverOpen = true;
+            deaths++;
+            ctx.states().push(new GameOverState(ctx, this));
+        } else if (!player.isDead() && !completed && body.intersects(level.exit())) {
             completed = true;
             ctx.states().push(new LevelCompleteState(ctx, catalog, index, level.title()));
         }
         camera.follow(player.hitbox(), level.widthPx(), level.heightPx());
     }
 
-    private void die() {
-        deaths++;
+    /** Back to the last checkpoint with full hearts; enemies and pickups start over. */
+    public void retry() {
         player.respawn(bodyX(respawn), bodyY(respawn));
+        player.restoreHealth();
+        actors = new Actors(level);
         camera.snapTo(player.hitbox(), level.widthPx(), level.heightPx());
+        gameOverOpen = false;
     }
 
     @Override
@@ -110,12 +129,15 @@ public final class PlayingState implements GameState {
         Rect view = camera.view();
         renderer.drawBehind(g, view);
         renderer.drawMarkers(g, activeCheckpoint);
+        actors.render(g, view);
         player.render(g);
         renderer.drawFront(g, view);
         g.translate(cx, cy);
+        Hud.render(g, player);
         g.setColor(HINT);
         g.setFont(HINT_FONT);
-        g.drawString("Esc: pause", 8, 14);
+        int w = g.getFontMetrics().stringWidth(HINT_TEXT);
+        g.drawString(HINT_TEXT, GameConfig.LOGICAL_WIDTH - w - 8, 14);
     }
 
     public Player player() {
@@ -130,10 +152,15 @@ public final class PlayingState implements GameState {
         return camera;
     }
 
+    public Actors actors() {
+        return actors;
+    }
+
     public Spot respawnPoint() {
         return respawn;
     }
 
+    /** How many times this level ended in Game Over. */
     public int deaths() {
         return deaths;
     }

@@ -22,6 +22,7 @@ public final class LevelCompleteState implements GameState {
     private final LevelCatalog catalog;
     private final int index;
     private final String title;
+    private final InputGrace grace = new InputGrace(InputGrace.GRACE_TICKS);
 
     public LevelCompleteState(GameContext ctx, LevelCatalog catalog, int index, String title) {
         this.ctx = ctx;
@@ -32,7 +33,7 @@ public final class LevelCompleteState implements GameState {
 
     @Override
     public void update(Controls c) {
-        if (!c.wasPressed(Action.CONFIRM)) return;
+        if (!grace.tick() || !c.wasPressed(Action.CONFIRM)) return;
         if (index + 1 < catalog.size()) {
             ctx.states().replaceAll(new PlayingState(ctx, catalog, index + 1));
         } else {
