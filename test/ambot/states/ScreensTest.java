@@ -36,18 +36,18 @@ class ScreensTest {
     }
 
     @Test
-    void quitSkipsDisabledOptions() {
+    void quitIsLast() {
         startOn(new MainMenuState(ctx));
-        tick(press(Action.DOWN));
-        tick(press(Action.DOWN));
+        tick(press(Action.UP)); // from New Game, past the greyed-out Continue, wraps to Quit
         tick(press(Action.CONFIRM));
         assertTrue(ctx.quitCalled);
     }
 
     @Test
     void creditsBackReturnsToMenu() {
-        startOn(new MainMenuState(ctx));
-        tick(press(Action.DOWN));
+        MainMenuState menu = new MainMenuState(ctx);
+        startOn(menu);
+        for (int i = 0; i < 5 && menu.selectedIndex() != MainMenuState.CREDITS; i++) tick(press(Action.DOWN));
         tick(press(Action.CONFIRM));
         tick(Controls.NONE);
         assertInstanceOf(CreditsState.class, ctx.states().top());

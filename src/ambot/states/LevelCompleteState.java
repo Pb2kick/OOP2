@@ -37,7 +37,9 @@ public final class LevelCompleteState implements GameState {
         if (index + 1 < catalog.size()) {
             ctx.states().replaceAll(new PlayingState(ctx, catalog, index + 1));
         } else {
-            ctx.states().replaceAll(new MainMenuState(ctx));
+            ctx.campaign().worldOf(catalog).ifPresentOrElse(
+                    w -> ctx.states().replaceAll(new WorldClearState(ctx, w)),
+                    () -> ctx.states().replaceAll(new MainMenuState(ctx)));
         }
     }
 
