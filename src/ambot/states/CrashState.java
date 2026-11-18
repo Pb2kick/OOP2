@@ -3,6 +3,7 @@ package ambot.states;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,15 +23,33 @@ public final class CrashState implements GameState {
     private final GameContext ctx;
     private final String kind;
     private final List<String> message;
+    private final Path log;
+    private final InputGrace grace = new InputGrace(InputGrace.GRACE_TICKS);
 
     public CrashState(GameContext ctx, RuntimeException e) {
+        this(ctx, e, null);
+    }
+
+    /** {@code log} is where the details were saved, or null if they couldn't be. */
+    public CrashState(GameContext ctx, RuntimeException e, Path log) {
         this.ctx = ctx;
         this.kind = e.getClass().getSimpleName();
         this.message = wrap(e.getMessage(), WRAP, MAX_LINES);
+        this.log = log;
+    }
+
+    /** The detail lines under the title: the error type, its message, and where the log is. */
+    List<String> detailLines() {
+        List<String> out = new ArrayList<>();
+        out.add(kind);
+        out.addAll(message);
+        if (log != null) out.add("Details saved to " + log);
+        return out;
     }
 
     @Override
     public void update(Controls c) {
+        if (!grace.tick()) return;
         if (c.wasPressed(Action.CONFIRM)) ctx.states().replaceAll(new MainMenuState(ctx));
         else if (c.wasPressed(Action.BACK)) ctx.quit();
     }
@@ -40,11 +59,10 @@ public final class CrashState implements GameState {
         g.setColor(BACKGROUND);
         g.fillRect(0, 0, GameConfig.LOGICAL_WIDTH, GameConfig.LOGICAL_HEIGHT);
         MainMenuState.drawCentered(g, "Something went wrong.", TITLE, TEXT, 120);
-        MainMenuState.drawCentered(g, kind, BODY, DETAIL, 150);
-        int y = 168;
-        for (String line : message) {
+        int y = 150;
+        for (String line : detailLines()) {
             MainMenuState.drawCentered(g, line, BODY, DETAIL, y);
-            y += 13;
+            y += 14;
         }
         MainMenuState.drawCentered(g, "Enter: main menu   Esc: quit", BODY, TEXT, 240);
     }

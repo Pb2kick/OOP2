@@ -81,7 +81,7 @@ public final class Game implements GameContext {
         }, () -> pauseRequested.set(true));
         loop = new GameLoop(new FixedStep(GameConfig.UPS, GameConfig.MAX_CATCH_UP), this::tick, this::render, e -> {
             e.printStackTrace();
-            states.reset(new CrashState(this, e));
+            states.reset(new CrashState(this, e, CrashLog.write(CrashLog.defaultDir(), e)));
         });
         states.replaceAll(new MainMenuState(this));
         if (progress.data().fullscreen()) window.toggleFullscreen();

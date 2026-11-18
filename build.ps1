@@ -7,9 +7,11 @@
 #   smoke    start the game, drive it with scripted input, save frames + UPS/FPS/CPU to build\smoke
 #   levels   convert levels-src\**\*.txt into resources\levels\**\*.tmx (see docs\LEVELS.md)
 #   preview  render every level to a PNG in build\preview
+#   jar      build build\AMBOT.jar (double-clickable with Java 21+ installed)
+#   package  build the portable Windows release: build\AMBOT-v<version>-windows.zip (AMBOT.exe + runtime)
 #   clean    delete build\
 param(
-    [ValidateSet('deps', 'compile', 'test', 'run', 'smoke', 'levels', 'preview', 'clean')]
+    [ValidateSet('deps', 'compile', 'test', 'run', 'smoke', 'levels', 'preview', 'jar', 'package', 'clean')]
     [string]$Task = 'run',
     [string]$Select
 )
@@ -17,6 +19,7 @@ $ErrorActionPreference = 'Stop'
 Set-Location -LiteralPath $PSScriptRoot
 
 $MainClass = 'ambot.Main'
+$Version = '0.1'   # keep in step with GameConfig.VERSION
 $JunitVersion = '1.11.4'
 $JunitJar = "lib\junit-platform-console-standalone-$JunitVersion.jar"
 $JunitUrl = "https://repo1.maven.org/maven2/org/junit/platform/junit-platform-console-standalone/$JunitVersion/junit-platform-console-standalone-$JunitVersion.jar"
@@ -74,6 +77,28 @@ function Invoke-CompileTests {
     return $true
 }
 
+function Invoke-Jar {
+    Invoke-Compile
+    if (Test-Path build\AMBOT.jar) { Remove-Item build\AMBOT.jar }
+    Invoke-Checked (Join-Path $Jdk 'bin\jar.exe') @('--create', '--file', 'build\AMBOT.jar', '--main-class', $MainClass, '-C', 'build\classes', '.')
+    Write-Host 'Built build\AMBOT.jar'
+}
+
+function Invoke-Package {
+    Invoke-Jar
+    $zip = "build\AMBOT-v$Version-windows.zip"
+    foreach ($old in 'build\dist', 'build\jpackage-input', $zip) {
+        if (Test-Path $old) { Remove-Item -Recurse -Force $old }
+    }
+    New-Item -ItemType Directory -Force build\jpackage-input | Out-Null
+    Copy-Item build\AMBOT.jar build\jpackage-input\
+    Invoke-Checked (Join-Path $Jdk 'bin\jpackage.exe') @('--type', 'app-image', '--name', 'AMBOT', '--app-version', $Version,
+        '--input', 'build\jpackage-input', '--main-jar', 'AMBOT.jar', '--main-class', $MainClass, '--dest', 'build\dist',
+        '--add-modules', 'java.desktop,java.xml', '--jlink-options', '--strip-debug --no-header-files --no-man-pages')
+    Compress-Archive -Path build\dist\AMBOT -DestinationPath $zip
+    Write-Host "Packaged $zip"
+}
+
 function Invoke-Tests {
     if (-not (Invoke-CompileTests)) { Write-Host 'No tests found.'; return }
     $runArgs = @('-jar', $JunitJar, 'execute', '--disable-banner', '--details=tree', '--class-path', 'build\classes;build\test-classes')
@@ -89,5 +114,7 @@ switch ($Task) {
     'smoke'   { [void](Invoke-CompileTests); Invoke-Checked $Java @('-cp', 'build\classes;build\test-classes', 'ambot.tools.SmokeRun', 'build\smoke') }
     'levels'  { [void](Invoke-CompileTests); Invoke-Checked $Java @('-cp', 'build\classes;build\test-classes', 'ambot.tools.AsciiTmx', 'levels-src', 'resources'); Invoke-Checked $Java @('-cp', 'build\classes;build\test-classes', 'ambot.tools.PlaceholderAudio', 'resources') }
     'preview' { [void](Invoke-CompileTests); Invoke-Checked $Java @('-cp', 'build\classes;build\test-classes', 'ambot.tools.LevelPreview', 'build\preview') }
+    'jar'     { Invoke-Jar }
+    'package' { Invoke-Package }
     'clean'   { if (Test-Path build) { Remove-Item -Recurse -Force build } }
 }

@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Set;
 
@@ -32,6 +33,7 @@ class CrashStateTest {
         g.dispose();
         ctx.states().replaceAll(crash);
         ctx.states().update(Controls.NONE);
+        for (int i = 0; i < InputGrace.GRACE_TICKS; i++) ctx.states().update(Controls.NONE);
         ctx.states().update(press(Action.CONFIRM));
         ctx.states().update(Controls.NONE);
         assertInstanceOf(MainMenuState.class, ctx.states().top());
@@ -41,8 +43,24 @@ class CrashStateTest {
     void escapeQuits() {
         ctx.states().replaceAll(new CrashState(ctx, new RuntimeException()));
         ctx.states().update(Controls.NONE);
+        for (int i = 0; i < InputGrace.GRACE_TICKS; i++) ctx.states().update(Controls.NONE);
         ctx.states().update(press(Action.BACK));
         assertTrue(ctx.quitCalled);
+    }
+
+    @Test
+    void confirmIgnoredDuringGrace() {
+        ctx.states().replaceAll(new CrashState(ctx, new RuntimeException("oops")));
+        ctx.states().update(press(Action.CONFIRM)); // a mashed Space or Enter
+        ctx.states().update(Controls.NONE);
+        assertInstanceOf(CrashState.class, ctx.states().top(), "the message stays up");
+    }
+
+    @Test
+    void showsLogPath() {
+        CrashState crash = new CrashState(ctx, new RuntimeException("oops"), Path.of("C:/Users/me/AppData/AMBOT/crash.log"));
+        assertTrue(crash.detailLines().stream().anyMatch(l -> l.contains("crash.log")), crash.detailLines().toString());
+        assertTrue(new CrashState(ctx, new RuntimeException("oops")).detailLines().stream().noneMatch(l -> l.contains("crash.log")));
     }
 
     @Test
