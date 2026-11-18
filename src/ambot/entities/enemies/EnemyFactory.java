@@ -20,7 +20,7 @@ public final class EnemyFactory {
         String drop = o.property("drop");
         return switch (type) {
             case "walker" -> new Walker(body.x(), body.y(), drop);
-            case "shooter" -> throw new UnsupportedOperationException("shooter is not built yet");
+            case "shooter" -> new Shooter(body.x(), body.y(), drop);
             default -> throw new IllegalArgumentException("unknown enemy type '" + type + "'");
         };
     }
@@ -34,8 +34,8 @@ public final class EnemyFactory {
                 h = Walker.H;
             }
             case "shooter" -> {
-                w = 14;
-                h = 22;
+                w = Shooter.W;
+                h = Shooter.H;
             }
             default -> throw new IllegalArgumentException("unknown enemy type '" + type + "'");
         }
