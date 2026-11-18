@@ -6,6 +6,8 @@ import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 import java.util.List;
 
+import ambot.audio.Audio;
+import ambot.audio.Sfx;
 import ambot.input.Action;
 import ambot.input.Controls;
 
@@ -38,6 +40,15 @@ public final class Menu {
         if (c.wasPressed(Action.DOWN)) move(1);
         if (c.wasPressed(Action.UP)) move(-1);
         if (c.wasPressed(Action.CONFIRM)) items.get(selected).action().run();
+    }
+
+    /** As {@link #update(Controls)}, with a click when the selection moves and a chime on confirm. */
+    public void update(Controls c, Audio audio) {
+        int before = selected;
+        boolean confirm = c.wasPressed(Action.CONFIRM);
+        update(c);
+        if (confirm) audio.play(Sfx.MENU_SELECT);
+        else if (selected != before) audio.play(Sfx.MENU_MOVE);
     }
 
     private void move(int dir) {

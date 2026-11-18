@@ -10,7 +10,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.swing.SwingUtilities;
 
+import ambot.audio.Audio;
+import ambot.audio.SampledAudio;
 import ambot.entities.player.PlayerAnimations;
+import ambot.level.Campaign;
+import ambot.save.FileSaveStore;
+import ambot.save.Progress;
 import ambot.gfx.SpriteSheet;
 import ambot.input.InputState;
 import ambot.input.KeyBindings;
@@ -42,8 +47,13 @@ public final class Game implements GameContext {
     private final AtomicBoolean pauseRequested = new AtomicBoolean();
     private final KeyRepeatFilter oneShotKeys = new KeyRepeatFilter();
     private volatile boolean debugOverlay;
+    private final Progress progress = new Progress(new FileSaveStore(FileSaveStore.defaultFile()));
+    private final Audio audio = SampledAudio.createOrSilent();
+    private final Campaign campaign = Campaign.standard();
 
     public Game() {
+        audio.setMusicVolume(progress.data().musicVolume());
+        audio.setSfxVolume(progress.data().sfxVolume());
         SwingInputAdapter adapter = new SwingInputAdapter(input);
         screen.addKeyListener(adapter);
         screen.addMouseListener(adapter);
@@ -52,7 +62,10 @@ public final class Game implements GameContext {
             public void keyPressed(KeyEvent e) {
                 int code = e.getKeyCode();
                 // ignore OS auto-repeat so holding F11 does not flicker in and out of fullscreen
-                if (code == KeyEvent.VK_F11 && oneShotKeys.firstPress(code)) window.toggleFullscreen();
+                if (code == KeyEvent.VK_F11 && oneShotKeys.firstPress(code)) {
+                    window.toggleFullscreen();
+                    progress.setFullscreen(window.isFullscreen());
+                }
                 if (code == KeyEvent.VK_F3 && oneShotKeys.firstPress(code)) debugOverlay = !debugOverlay;
             }
 
@@ -71,6 +84,7 @@ public final class Game implements GameContext {
             states.reset(new CrashState(this, e));
         });
         states.replaceAll(new MainMenuState(this));
+        if (progress.data().fullscreen()) window.toggleFullscreen();
     }
 
     public void start() {
@@ -116,6 +130,29 @@ public final class Game implements GameContext {
         loop.stop();
         SwingUtilities.invokeLater(window::dispose);
         System.exit(0);
+    }
+
+    @Override
+    public Progress progress() {
+        return progress;
+    }
+
+    @Override
+    public Audio audio() {
+        return audio;
+    }
+
+    @Override
+    public Campaign campaign() {
+        return campaign;
+    }
+
+    /** Called from the game loop (Options); the window is changed on the Swing event thread. */
+    @Override
+    public void setFullscreen(boolean on) {
+        SwingUtilities.invokeLater(() -> {
+            if (window.isFullscreen() != on) window.toggleFullscreen();
+        });
     }
 
     public InputState input() {

@@ -80,6 +80,10 @@ public final class GameWindow {
         SwingUtilities.invokeLater(screen::requestFocusInWindow);
     }
 
+    public boolean isFullscreen() {
+        return fullscreen;
+    }
+
     public void dispose() {
         frame.dispose();
     }

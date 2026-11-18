@@ -215,6 +215,20 @@ class PlayingStateTest {
     }
 
     @Test
+    void reachingExitSavesCompletion() {
+        start(wide(20, 5, Map.of()));
+        reachExit();
+        assertTrue(ctx.progress().data().completed().contains("level-1"));
+        assertTrue(ctx.audio.played.contains(ambot.audio.Sfx.LEVEL_CLEAR));
+    }
+
+    @Test
+    void enteringPlaysWorldMusic() {
+        start(FLAT);
+        assertEquals(ambot.audio.Music.WORLD1, ctx.audio.musicNow);
+    }
+
+    @Test
     void confirmAfterLastLevelReturnsToMenu() {
         start(wide(20, 5, Map.of()));
         reachExit();

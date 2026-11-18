@@ -1,6 +1,9 @@
 package ambot.save;
 
-/** The player's progress and settings for this run, saved after every change (spec section 5.9). */
+/**
+ * The player's progress and settings for this run, saved after every change (spec section 5.9).
+ * Synchronized: the game loop and the window's F11 handler both change it.
+ */
 public final class Progress {
     private final SaveStore store;
     private SaveData data;
@@ -10,32 +13,32 @@ public final class Progress {
         this.data = store.load();
     }
 
-    public SaveData data() {
+    public synchronized SaveData data() {
         return data;
     }
 
-    public boolean hasProgress() {
+    public synchronized boolean hasProgress() {
         return !data.completed().isEmpty();
     }
 
-    public void markCompleted(String levelId) {
+    public synchronized void markCompleted(String levelId) {
         update(data.withCompleted(levelId));
     }
 
-    public void setMusicVolume(int volume) {
+    public synchronized void setMusicVolume(int volume) {
         update(data.withMusic(volume));
     }
 
-    public void setSfxVolume(int volume) {
+    public synchronized void setSfxVolume(int volume) {
         update(data.withSfx(volume));
     }
 
-    public void setFullscreen(boolean on) {
+    public synchronized void setFullscreen(boolean on) {
         update(data.withFullscreen(on));
     }
 
     /** New Game: forget completed levels, keep the settings. */
-    public void reset() {
+    public synchronized void reset() {
         update(data.withoutProgress());
     }
 

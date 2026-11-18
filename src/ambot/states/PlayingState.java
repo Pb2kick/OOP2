@@ -4,6 +4,8 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
 
+import ambot.audio.Music;
+import ambot.audio.Sfx;
 import ambot.core.GameConfig;
 import ambot.entities.Actors;
 import ambot.entities.Facing;
@@ -80,6 +82,12 @@ public final class PlayingState implements GameState {
             ctx.states().push(new PausedState(ctx));
             return;
         }
+        SoundCues.Snapshot before = SoundCues.Snapshot.of(this);
+        tick(c);
+        SoundCues.observe(before, SoundCues.Snapshot.of(this), ctx.audio());
+    }
+
+    private void tick(Controls c) {
         player.update(c, level.collision());
         actors.update(player, level.collision());
         Rect body = player.hitbox();
@@ -102,6 +110,8 @@ public final class PlayingState implements GameState {
             ctx.states().push(new GameOverState(ctx, this));
         } else if (!player.isDead() && !completed && body.intersects(level.exit())) {
             completed = true;
+            ctx.progress().markCompleted(catalog.id(index)); // saved now, not when Enter is pressed
+            ctx.audio().play(Sfx.LEVEL_CLEAR);
             ctx.states().push(new LevelCompleteState(ctx, catalog, index, level.title()));
         }
         camera.follow(player.hitbox(), level.widthPx(), level.heightPx());
@@ -114,6 +124,11 @@ public final class PlayingState implements GameState {
         actors = new Actors(level);
         camera.snapTo(player.hitbox(), level.widthPx(), level.heightPx());
         gameOverOpen = false;
+    }
+
+    @Override
+    public void onEnter() {
+        ctx.audio().playMusic(Music.WORLD1);
     }
 
     @Override

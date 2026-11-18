@@ -28,6 +28,9 @@ public final class SmokeRun {
     public static void main(String[] args) throws Exception {
         out = new File(args.length > 0 ? args[0] : "build/smoke");
         out.mkdirs();
+        // never touch the player's real save in %APPDATA%
+        System.setProperty("ambot.save", new File(out, "save.properties").getPath());
+        new File(out, "save.properties").delete();
         AtomicReference<Game> ref = new AtomicReference<>();
         SwingUtilities.invokeAndWait(() -> {
             Game g = new Game();
