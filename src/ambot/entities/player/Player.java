@@ -1,7 +1,12 @@
 package ambot.entities.player;
 
+import static ambot.entities.player.PlayerTuning.ATTACK_BOX_H;
+import static ambot.entities.player.PlayerTuning.ATTACK_FIRST_ACTIVE_FRAME;
+import static ambot.entities.player.PlayerTuning.ATTACK_LAST_ACTIVE_FRAME;
+import static ambot.entities.player.PlayerTuning.ATTACK_REACH;
 import static ambot.entities.player.PlayerTuning.BLINK_TICKS;
 import static ambot.entities.player.PlayerTuning.COYOTE_TICKS;
+import static ambot.entities.player.PlayerTuning.CROUCH_H;
 import static ambot.entities.player.PlayerTuning.DEATH_TICKS;
 import static ambot.entities.player.PlayerTuning.DROP_THROUGH_TICKS;
 import static ambot.entities.player.PlayerTuning.HITBOX_H;
@@ -20,6 +25,7 @@ import static ambot.entities.player.PlayerTuning.SPRITE_CENTER_X;
 
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
+import java.util.Optional;
 
 import ambot.entities.Creature;
 import ambot.entities.Facing;
@@ -27,6 +33,7 @@ import ambot.gfx.AnimationClip;
 import ambot.gfx.SpriteSheet;
 import ambot.input.Action;
 import ambot.input.Controls;
+import ambot.level.Rect;
 import ambot.level.TileCollider;
 import ambot.level.TileMap;
 
@@ -44,6 +51,8 @@ public class Player extends Creature {
     /** Ticks left during which one-way platforms are ignored. */
     private int dropTicks;
     private int hurtTicks, invincibleTicks, deathTicks;
+    /** Counts attacks started; lets each swing hit an enemy only once. */
+    private int swingId;
 
     public Player(double x, double y, SpriteSheet sheet) {
         super(x, y, HITBOX_W, HITBOX_H, MAX_HEARTS);
@@ -79,13 +88,15 @@ public class Player extends Creature {
         // 2. attack starts
         if (c.wasPressed(Action.ATTACK) && state != PlayerState.ATTACK) {
             state = PlayerState.ATTACK;
+            swingId++;
             animator.play(PlayerAnimations.ATTACK);
         }
         boolean attacking = state == PlayerState.ATTACK;
 
-        // 3. horizontal movement and facing
+        // 3. horizontal movement and facing; crouching lowers the hitbox (feet stay put)
         int dir = (c.isHeld(Action.RIGHT) ? 1 : 0) - (c.isHeld(Action.LEFT) ? 1 : 0);
         boolean crouching = c.isHeld(Action.DOWN) && onGround && !attacking && dropTicks == 0;
+        setHeightKeepingFeet(crouching ? CROUCH_H : HITBOX_H);
         vx = (crouching || (attacking && onGround)) ? 0 : dir * RUN_SPEED;
         if (dir != 0 && !attacking) {
             facing = dir > 0 ? Facing.RIGHT : Facing.LEFT;
@@ -131,8 +142,23 @@ public class Player extends Creature {
         animator.tick();
     }
 
+    /** The sword's hit area, present only during the slash frames of an attack. */
+    public Optional<Rect> attackBox() {
+        int frame = animator.frameIndex();
+        if (state != PlayerState.ATTACK || frame < ATTACK_FIRST_ACTIVE_FRAME || frame > ATTACK_LAST_ACTIVE_FRAME) {
+            return Optional.empty();
+        }
+        double bx = facing == Facing.RIGHT ? x + width : x - ATTACK_REACH;
+        return Optional.of(new Rect(bx, y + 4, ATTACK_REACH, ATTACK_BOX_H));
+    }
+
+    public int swingId() {
+        return swingId;
+    }
+
     @Override
     protected void onDamaged(double fromX) {
+        setHeightKeepingFeet(HITBOX_H);
         if (health == 0) {
             kill();
             return;
@@ -152,6 +178,7 @@ public class Player extends Creature {
 
     /** Instant death (pits): works even while invincible. */
     public void kill() {
+        setHeightKeepingFeet(HITBOX_H);
         health = 0;
         state = PlayerState.DEAD;
         vx = 0;
@@ -176,6 +203,7 @@ public class Player extends Creature {
 
     /** Puts the player back at a position, standing still, no longer hurt or dying. */
     public void respawn(double newX, double newY) {
+        height = HITBOX_H;
         x = newX;
         y = newY;
         vx = 0;

@@ -29,6 +29,14 @@ public final class PlayerTuning {
     public static final int DEATH_TICKS = 60;
     /** While invincible the sprite is hidden for this many ticks, then shown for as many. */
     public static final int BLINK_TICKS = 4;
+    /** Hitbox height while crouching, low enough that bolts fired at standing height fly over. */
+    public static final int CROUCH_H = 18;
+    /** The sword's reach in front of the body, and the blade box height. */
+    public static final int ATTACK_REACH = 20;
+    public static final int ATTACK_BOX_H = 20;
+    /** Frames of the ATTACK clip during which the blade hits (the slash frames on sheet row 6). */
+    public static final int ATTACK_FIRST_ACTIVE_FRAME = 2;
+    public static final int ATTACK_LAST_ACTIVE_FRAME = 3;
     public static final int HITBOX_W = 14;
     public static final int HITBOX_H = 28;
     /** The body's centre column inside the 50-px sheet cell. */

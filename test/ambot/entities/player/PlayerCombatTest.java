@@ -154,6 +154,68 @@ class PlayerCombatTest {
         assertFalse(p.deathFinished());
     }
 
+    static Controls press(Action a) {
+        return Controls.of(Set.of(a), Set.of(a), Set.of());
+    }
+
+    @Test
+    void crouchShrinksHitboxKeepingFeet() {
+        Player p = standing(32);
+        double bottom = p.hitbox().bottom();
+        step(p, held(Action.DOWN), 3);
+        assertEquals(PlayerTuning.CROUCH_H, p.hitbox().h());
+        assertEquals(bottom, p.hitbox().bottom());
+        step(p, Controls.NONE, 1);
+        assertEquals(PlayerTuning.HITBOX_H, p.hitbox().h());
+        assertEquals(bottom, p.hitbox().bottom());
+    }
+
+    @Test
+    void attackBoxOnlyInActiveFramesAndInFront() {
+        Player p = standing(32);
+        p.update(press(Action.ATTACK), ROOM);
+        for (int n = 1; n <= 25; n++) {
+            if (n > 1) p.update(Controls.NONE, ROOM);
+            boolean active = n >= 10 && n <= 19;
+            assertEquals(active, p.attackBox().isPresent(), "after update " + n);
+            if (active) {
+                assertEquals(p.hitbox().right(), p.attackBox().get().x());
+                assertEquals(p.hitbox().y() + 4, p.attackBox().get().y());
+            }
+        }
+        Player q = standing(100);
+        step(q, held(Action.LEFT), 1);
+        q.update(press(Action.ATTACK), ROOM);
+        step(q, Controls.NONE, 9);
+        assertEquals(q.hitbox().x(), q.attackBox().orElseThrow().right(), "facing left, the blade is on the left");
+    }
+
+    @Test
+    void swingIdIncrementsPerAttack() {
+        Player p = standing(32);
+        int first = p.swingId();
+        p.update(press(Action.ATTACK), ROOM);
+        assertEquals(first + 1, p.swingId());
+        step(p, Controls.NONE, 40);
+        p.update(press(Action.ATTACK), ROOM);
+        assertEquals(first + 2, p.swingId());
+    }
+
+    @Test
+    void standingUpNeverEmbedsInCeiling() {
+        TileMap corridor = TileMap.fromAscii(
+                "##########",
+                "..........",
+                "..........",
+                "##########"); // 32 px tall corridor, floor top at y=48
+        Player p = new Player(40, 48 - PlayerTuning.HITBOX_H, sheet);
+        for (int i = 0; i < 3; i++) p.update(Controls.NONE, corridor);
+        for (int i = 0; i < 5; i++) p.update(held(Action.DOWN), corridor);
+        p.update(Controls.NONE, corridor);
+        assertFalse(corridor.overlaps(p.hitbox(), TileMap.SOLID), "hitbox " + p.hitbox());
+        assertEquals(PlayerTuning.HITBOX_H, p.hitbox().h());
+    }
+
     @Test
     void healCapsAtMax() {
         Player p = standing(100);

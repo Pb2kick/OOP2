@@ -52,6 +52,12 @@ public abstract class Creature extends Entity implements Damageable {
         health = Math.min(maxHealth, health + amount);
     }
 
+    /** Changes the hitbox height, keeping the feet where they are. */
+    protected void setHeightKeepingFeet(double h) {
+        y += height - h;
+        height = h;
+    }
+
     /** While true, {@link #damage} does nothing. */
     protected boolean isInvincible() {
         return false;

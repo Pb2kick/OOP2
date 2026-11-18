@@ -7,7 +7,9 @@ import ambot.level.Rect;
 /** Anything placed in a level. (x, y) is the top-left of its hitbox, in logical pixels. */
 public abstract class Entity {
     protected double x, y;
-    protected final double width, height;
+    protected final double width;
+    /** Not final: a crouching player is shorter. */
+    protected double height;
 
     protected Entity(double x, double y, double width, double height) {
         this.x = x;

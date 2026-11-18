@@ -233,7 +233,7 @@ class PlayerTest {
         p.update(press(Action.DOWN), LEDGE_ROOM);
         stepOn(LEDGE_ROOM, p, held(Action.DOWN), 10);
         assertEquals(PlayerState.CROUCH, p.state());
-        assertEquals(ON_LEDGE_Y, p.y());
+        assertEquals(ON_LEDGE_Y + 28, p.hitbox().bottom(), "feet stay on the ledge (crouching lowers only the top)");
     }
 
     @Test
@@ -243,7 +243,7 @@ class PlayerTest {
         p.update(press(Action.DOWN), LEDGE_ROOM);
         stepOn(LEDGE_ROOM, p, held(Action.DOWN), 10);
         assertEquals(PlayerState.CROUCH, p.state());
-        assertEquals(STANDING_Y, p.y());
+        assertEquals(STANDING_Y + 28, p.hitbox().bottom(), "feet stay on the floor");
     }
 
     @Test
