@@ -16,6 +16,7 @@ import ambot.input.InputState;
 import ambot.input.KeyBindings;
 import ambot.input.KeyRepeatFilter;
 import ambot.input.SwingInputAdapter;
+import ambot.states.CrashState;
 import ambot.states.GameContext;
 import ambot.states.MainMenuState;
 import ambot.states.StateManager;
@@ -65,7 +66,10 @@ public final class Game implements GameContext {
             input.releaseAll();
             oneShotKeys.reset();
         }, () -> pauseRequested.set(true));
-        loop = new GameLoop(new FixedStep(GameConfig.UPS, GameConfig.MAX_CATCH_UP), this::tick, this::render);
+        loop = new GameLoop(new FixedStep(GameConfig.UPS, GameConfig.MAX_CATCH_UP), this::tick, this::render, e -> {
+            e.printStackTrace();
+            states.reset(new CrashState(this, e));
+        });
         states.replaceAll(new MainMenuState(this));
     }
 

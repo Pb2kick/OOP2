@@ -37,6 +37,13 @@ public final class StateManager {
         });
     }
 
+    /** Drops every state and every queued change at once, then enters {@code s} (used after a crash). */
+    public void reset(GameState s) {
+        pending.clear();
+        stack.clear();
+        enter(s);
+    }
+
     private void enter(GameState s) {
         stack.addLast(s);
         s.onEnter();
