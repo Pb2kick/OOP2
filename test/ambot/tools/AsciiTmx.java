@@ -78,6 +78,9 @@ public final class AsciiTmx {
                     case 'C', 'E' -> objects.add("  <object id=\"" + nextId++ + "\" type=\""
                             + (c == 'C' ? "checkpoint" : "exit") + "\" x=\"" + tx * T + "\" y=\"" + (ty - 1) * T
                             + "\" width=\"" + T + "\" height=\"" + 2 * T + "\"/>\n");
+                    case 'w', 'W', 's' -> objects.add(pointObject(nextId++, "enemy", tx, ty,
+                            c == 's' ? "shooter" : "walker", c == 'W' ? "heart" : null));
+                    case 'h' -> objects.add(pointObject(nextId++, "pickup", tx, ty, "heart", null));
                     default -> throw new IllegalArgumentException("unknown level char '" + c + "' at " + tx + "," + ty);
                 }
             }
@@ -116,6 +119,16 @@ public final class AsciiTmx {
         sb.append(" <objectgroup id=\"").append(LAYERS.length + 1).append("\" name=\"entities\">\n");
         objects.forEach(sb::append);
         sb.append(" </objectgroup>\n</map>\n");
+        return sb.toString();
+    }
+
+    /** A point object standing on the bottom-centre of tile (tx, ty), with a {@code type} and optional {@code drop}. */
+    private static String pointObject(int id, String objectType, int tx, int ty, String kind, String drop) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("  <object id=\"").append(id).append("\" type=\"").append(objectType).append("\" x=\"")
+                .append(tx * T + T / 2).append("\" y=\"").append((ty + 1) * T).append("\">\n   <properties>\n");
+        if (drop != null) sb.append("    <property name=\"drop\" value=\"").append(drop).append("\"/>\n");
+        sb.append("    <property name=\"type\" value=\"").append(kind).append("\"/>\n   </properties>\n   <point/>\n  </object>\n");
         return sb.toString();
     }
 

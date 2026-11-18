@@ -111,6 +111,27 @@ class LevelValidatorTest {
     }
 
     @Test
+    void walkerIsKnown() {
+        List<LevelObject> objs = validObjects();
+        objs.add(point(LevelObject.ENEMY, 100, 80, Map.of("type", "walker", "drop", "heart")));
+        assertEquals(List.of(), check(objs, ROOM));
+    }
+
+    @Test
+    void flagsEnemyInsideSolid() {
+        List<LevelObject> objs = validObjects();
+        objs.add(point(LevelObject.ENEMY, 100, 88, Map.of("type", "walker"))); // feet 8 px into the floor
+        assertProblem(check(objs, ROOM), "enemy", "solid");
+    }
+
+    @Test
+    void flagsUnknownDrop() {
+        List<LevelObject> objs = validObjects();
+        objs.add(point(LevelObject.ENEMY, 100, 80, Map.of("type", "walker", "drop", "gold")));
+        assertProblem(check(objs, ROOM), "unknown drop 'gold'");
+    }
+
+    @Test
     void flagsEnemyWithoutType() {
         List<LevelObject> objs = validObjects();
         objs.add(point(LevelObject.ENEMY, 40, 70, Map.of()));

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import ambot.entities.enemies.EnemyFactory;
 import ambot.entities.player.PlayerTuning;
 
 /**
@@ -13,7 +14,7 @@ import ambot.entities.player.PlayerTuning;
  */
 public final class LevelValidator {
     /** Enemy types the game can spawn. M3 adds the World 1 enemies. */
-    public static final Set<String> KNOWN_ENEMY_TYPES = Set.of();
+    public static final Set<String> KNOWN_ENEMY_TYPES = EnemyFactory.KNOWN_TYPES;
     public static final Set<String> KNOWN_PICKUP_TYPES = Set.of("heart");
     private static final Set<String> KNOWN_OBJECT_TYPES = Set.of(LevelObject.PLAYER_SPAWN, LevelObject.CHECKPOINT,
             LevelObject.EXIT, LevelObject.ENEMY, LevelObject.PICKUP, LevelObject.BOSS_ARENA);
@@ -37,7 +38,16 @@ public final class LevelValidator {
             }
             if (outside(o.bounds(), level)) problems.add(o.type() + " at " + at + " is outside the map");
             switch (o.type()) {
-                case LevelObject.ENEMY -> knownType(o, KNOWN_ENEMY_TYPES, problems);
+                case LevelObject.ENEMY -> {
+                    knownType(o, KNOWN_ENEMY_TYPES, problems);
+                    String type = o.property("type");
+                    if (type != null && KNOWN_ENEMY_TYPES.contains(type)
+                            && map.overlaps(EnemyFactory.bodyAt(type, feet(o.bounds())), TileMap.SOLID)) {
+                        problems.add("enemy at " + at + " overlaps solid tiles");
+                    }
+                    String drop = o.property("drop");
+                    if (drop != null && !drop.equals("heart")) problems.add("unknown drop '" + drop + "' at " + at);
+                }
                 case LevelObject.PICKUP -> knownType(o, KNOWN_PICKUP_TYPES, problems);
                 case LevelObject.CHECKPOINT -> {
                     // the player touches the flag's box, then respawns standing on its bottom-centre
@@ -86,6 +96,10 @@ public final class LevelValidator {
         } else if (!known.contains(type)) {
             problems.add("unknown " + o.type() + " type '" + type + "' at " + at(o.bounds()));
         }
+    }
+
+    private static Spot feet(Rect b) {
+        return new Spot(b.x() + b.w() / 2, b.bottom());
     }
 
     /** The player's 14x28 body standing on the bottom-centre of a box (a point for spawns). */

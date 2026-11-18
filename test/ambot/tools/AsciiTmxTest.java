@@ -13,6 +13,7 @@ import java.util.Map;
 import org.junit.jupiter.api.Test;
 
 import ambot.level.Level;
+import ambot.level.LevelObject;
 import ambot.level.LevelValidator;
 import ambot.level.Rect;
 import ambot.level.Spot;
@@ -71,6 +72,24 @@ class AsciiTmxTest {
         Level l = load(AsciiTmx.toTmx(PROPS, "........", "........", "........", ".....CE.", "########"));
         assertEquals(List.of(new Rect(80, 32, 16, 32)), l.checkpoints());
         assertEquals(new Rect(96, 32, 16, 32), l.exit());
+    }
+
+    @Test
+    void enemyAndPickupChars() {
+        Level l = load(AsciiTmx.toTmx(PROPS, ".wWsh..", "#######"));
+        List<LevelObject> enemies = l.objects(LevelObject.ENEMY);
+        assertEquals(3, enemies.size());
+        assertEquals(new Rect(24, 16, 0, 0), enemies.get(0).bounds());
+        assertEquals("walker", enemies.get(0).property("type"));
+        assertEquals(null, enemies.get(0).property("drop"));
+        assertEquals("walker", enemies.get(1).property("type"));
+        assertEquals("heart", enemies.get(1).property("drop"));
+        assertEquals("shooter", enemies.get(2).property("type"));
+        assertEquals(null, enemies.get(2).property("drop"));
+        List<LevelObject> pickups = l.objects(LevelObject.PICKUP);
+        assertEquals(1, pickups.size());
+        assertEquals("heart", pickups.get(0).property("type"));
+        assertEquals(new Rect(72, 16, 0, 0), pickups.get(0).bounds());
     }
 
     @Test

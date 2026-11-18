@@ -9,6 +9,8 @@ public abstract class Creature extends Entity implements Damageable {
     protected double vx, vy;
     protected Facing facing = Facing.RIGHT;
     protected boolean onGround;
+    /** True when the last horizontal move ran into a wall. */
+    protected boolean blockedX;
     protected final Animator animator = new Animator();
     protected final int maxHealth;
     protected int health;
@@ -77,7 +79,8 @@ public abstract class Creature extends Entity implements Damageable {
 
         TileCollider.Move mx = TileCollider.moveX(hitbox(), vx, map);
         x = mx.position();
-        if (mx.blocked()) vx = 0;
+        blockedX = mx.blocked();
+        if (blockedX) vx = 0;
 
         TileCollider.Move my = TileCollider.moveY(hitbox(), vy, map, ignoreOneWay);
         y = my.position();
