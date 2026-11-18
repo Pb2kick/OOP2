@@ -1,0 +1,18 @@
+AMBOT v0.1
+
+An OOP2 group project
+Original team: names coming soon
+
+Restoration
+Pb2kick
+
+Art
+Player: Animated Pixel Adventurer by rvros (itch.io)
+Tiles, backgrounds and enemies: placeholder art (own work)
+
+Sound
+Placeholder sounds and music (own work)
+
+Made with Java and Swing
+
+Thanks for playing!
