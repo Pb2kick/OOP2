@@ -61,6 +61,8 @@ function Write-SourceList([string]$dir, [string]$listFile) {
 }
 
 function Invoke-Compile {
+    # start empty: classes or resources deleted from the tree must never linger into the jar
+    if (Test-Path build\classes) { Remove-Item -Recurse -Force build\classes }
     New-Item -ItemType Directory -Force build\classes | Out-Null
     [void](Write-SourceList 'src' 'build\sources.txt')
     Invoke-Checked $Javac @('--release', '21', '-encoding', 'UTF-8', '-Xlint:all', '-d', 'build\classes', '@build\sources.txt')
@@ -70,6 +72,7 @@ function Invoke-Compile {
 function Invoke-CompileTests {
     Get-Deps
     Invoke-Compile
+    if (Test-Path build\test-classes) { Remove-Item -Recurse -Force build\test-classes }
     New-Item -ItemType Directory -Force build\test-classes | Out-Null
     $count = Write-SourceList 'test' 'build\test-sources.txt'
     if ($count -eq 0) { return $false }
