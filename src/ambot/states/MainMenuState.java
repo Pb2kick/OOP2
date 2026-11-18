@@ -36,7 +36,7 @@ public final class MainMenuState implements GameState {
                 canContinue ? MenuItem.of("Continue", () -> play(next.get()[0], next.get()[1])) : MenuItem.disabled("Continue"),
                 MenuItem.of("New Game", this::newGame),
                 MenuItem.of("World Select", () -> ctx.states().push(new WorldSelectState(ctx))),
-                MenuItem.disabled("Options"),
+                MenuItem.of("Options", () -> ctx.states().push(new OptionsState(ctx))),
                 MenuItem.of("Credits", () -> ctx.states().push(new CreditsState(ctx))),
                 MenuItem.of("Quit", ctx::quit)));
     }
